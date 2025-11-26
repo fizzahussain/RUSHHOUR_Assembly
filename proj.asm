@@ -45,6 +45,30 @@
     inputChar       BYTE ?
     playerName      BYTE 30 DUP(?)
 
+
+     ground BYTE "================================================================================",0
+    
+    ; Title
+    titleLine1      BYTE "          ____  _   _ ____  _   _   _   _  ___  _   _ ____  ", 0
+    titleLine2      BYTE "         |  _ \| | | / ___|| | | | | | | |/ _ \| | | |  _ \ ", 0
+    titleLine3      BYTE "         | |_) | | | \___ \| |_| | | |_| | | | | | | | |_) |", 0
+    titleLine4      BYTE "         |  _ <| |_| |___) |  _  | |  _  | |_| | |_| |  _ < ", 0
+    titleLine5      BYTE "         |_| \_\\___/|____/|_| |_| |_| |_|\___/ \___/|_| \_\\", 0
+    titleLine6      BYTE "                                                              ", 0
+    titleLine7      BYTE "                     _____  __    __  __ ___                  ", 0
+    titleLine8      BYTE "                    |_   _|/ /\\ \\ \\/ \\|_ _|                 ", 0
+    titleLine9      BYTE "                      | | / /\\ \\\\ /\\ \\| |                  ", 0
+    titleLine10     BYTE "                      |_|/_/  \\_\\_||_/___|                  ", 0
+     menuOpt1        BYTE "            1. Start New Game", 0
+    menuOpt2        BYTE "            2. Continue Game", 0
+    menuOpt3        BYTE "            3. Change Difficulty", 0
+    menuOpt4        BYTE "            4. View Leaderboard", 0
+    menuOpt5        BYTE "            5. Instructions", 0
+    menuOpt6        BYTE "            6. Exit", 0
+    menuPrompt      BYTE "            Use Arrow Keys to select, Enter to confirm", 0
+
+
+
 .code
 main PROC
   
