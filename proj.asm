@@ -72,6 +72,156 @@
 .code
 main PROC
   
+    call Clrscr
+    call ShowTitle
+    call ShowMenu
+    exit
+
+    call WriteString
+    call Crlf
+    mov edx, OFFSET titleLine2
+    call WriteString
+    call Crlf
+    mov edx, OFFSET titleLine3
+    call WriteString
+    call Crlf
+    mov edx, OFFSET titleLine5
+    call WriteString
+    call Crlf
+    mov edx, OFFSET titleLine6
+    call WriteString
+    call Crlf
+    mov edx, OFFSET titleLine8
+    call WriteString
+    call Crlf
+    call Crlf
+    mov edx, OFFSET titleLine10
+    call WriteString
+    call Crlf
+    call Crlf
+    ret
+ShowTitle ENDP
+
+
+
+ShowMenu PROC
+    mov ecx, 6             ; number of menu options
+    mov ebx, 1             ; current selection index
+MenuLoop:
+    call Clrscr
+    call ShowTitle
+    cmp esi, 3
+    je PrintDone
+    mov edx, OFFSET menuOpt4
+    cmp esi, 4
+    je PrintDone
+    mov edx, OFFSET menuOpt5
+    cmp esi, 5
+    je PrintDone
+    mov edx, OFFSET menuOpt6
+PrintDone:
+    call Crlf
+    call WriteString
+    inc esi
+    cmp esi, 7
+    jl PrintOptions
+
+    call Crlf
+    mov eax, lightGray + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET menuPrompt
+    call Crlf
+    call WriteString
+
+    call ReadKey
+    jne MenuLoop
+    cmp ah, 72       ; Up arrow
+    je MoveUp
+    cmp ah, 80       ; Down arrow
+    je MoveDown
+    cmp ah, 28       ; Enter
+    je ConfirmOption
+    jmp MenuLoop
+
+MoveUp:
+    dec ebx
+    cmp ebx, 1
+    jge MenuLoop
+    mov ebx, 6
+    jmp MenuLoop
+
+MoveDown:
+    inc ebx
+    cmp ebx, 6
+    jle MenuLoop
+    mov ebx, 1
+    jmp MenuLoop
+
+ConfirmOption:
+    call Clrscr
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET ground
+    call WriteString
+    call Crlf
+    mov edx, OFFSET menuOpt1
+    cmp ebx, 1
+    je StartGame
+    mov edx, OFFSET menuOpt2
+    cmp ebx, 2
+    je ContinueGame
+    mov edx, OFFSET menuOpt3
+    cmp ebx, 3
+    je ChangeDiff
+    mov edx, OFFSET menuOpt4
+    cmp ebx, 4
+    je Leaderboard
+    mov edx, OFFSET menuOpt5
+    cmp ebx, 5
+    je Instructions
+    mov edx, OFFSET menuOpt6
+    cmp ebx, 6
+    je ExitGame
+    ret
+
+StartGame:
+    mov edx, OFFSET menuOpt1
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+ContinueGame:
+    mov edx, OFFSET menuOpt2
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+ChangeDiff:
+    mov edx, OFFSET menuOpt3
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+Leaderboard:
+    mov edx, OFFSET menuOpt4
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+Instructions:
+    mov edx, OFFSET menuOpt5
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+ExitGame:
+    mov edx, OFFSET menuOpt6
+    call WriteString
+    call Crlf
+    call WaitMsg
+    ret
+ShowMenu ENDP
+
 
 END main
 
