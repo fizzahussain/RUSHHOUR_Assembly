@@ -76,7 +76,12 @@ main PROC
     call ShowTitle
     call ShowMenu
     exit
+main ENDP
 
+
+
+ShowTitle PROC
+    mov edx, OFFSET titleLine1
     call WriteString
     call Crlf
     mov edx, OFFSET titleLine2
@@ -85,15 +90,23 @@ main PROC
     mov edx, OFFSET titleLine3
     call WriteString
     call Crlf
+    mov edx, OFFSET titleLine4
+    call WriteString
+    call Crlf
     mov edx, OFFSET titleLine5
     call WriteString
     call Crlf
     mov edx, OFFSET titleLine6
     call WriteString
     call Crlf
+    mov edx, OFFSET titleLine7
+    call WriteString
+    call Crlf
     mov edx, OFFSET titleLine8
     call WriteString
     call Crlf
+    mov edx, OFFSET titleLine9
+    call WriteString
     call Crlf
     mov edx, OFFSET titleLine10
     call WriteString
@@ -110,6 +123,26 @@ ShowMenu PROC
 MenuLoop:
     call Clrscr
     call ShowTitle
+
+    mov esi, 1
+PrintOptions:
+    cmp esi, ebx
+    jne NotSelected
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    jmp PrintItem
+NotSelected:
+    mov eax, white + (black * 16)
+    call SetTextColor
+
+PrintItem:
+    mov edx, OFFSET menuOpt1
+    cmp esi, 1
+    je PrintDone
+    mov edx, OFFSET menuOpt2
+    cmp esi, 2
+    je PrintDone
+    mov edx, OFFSET menuOpt3
     cmp esi, 3
     je PrintDone
     mov edx, OFFSET menuOpt4
@@ -134,6 +167,7 @@ PrintDone:
     call WriteString
 
     call ReadKey
+    cmp al, 0
     jne MenuLoop
     cmp ah, 72       ; Up arrow
     je MoveUp
@@ -222,6 +256,123 @@ ExitGame:
     ret
 ShowMenu ENDP
 
+ call Randomize
+    call initializegrid
+    call placebuildings
+    call placeplayer
+    call displayboard
+    call WaitMsg
+    exit
+main ENDP
+
+initializegrid PROC
+    mov esi, 0
+    mov ecx, 400
+fill_loop:
+    mov byte ptr grid[esi], '.'
+    inc esi
+    loop fill_loop
+    ret
+initializegrid ENDP
+
+placebuildings PROC
+    mov ecx, 140
+build_loop:
+    mov eax, 20
+    call RandomRange
+    mov ebx, eax
+    mov eax, 20
+    call RandomRange
+    imul ebx, 20
+    add ebx, eax
+    cmp ebx, 0
+    je skip_pos
+    cmp ebx, 400
+    jge skip_pos
+    cmp byte ptr grid[ebx], 'B'
+    je skip_pos
+    mov byte ptr grid[ebx], 'B'
+skip_pos:
+    loop build_loop
+    ret
+placebuildings ENDP
+
+placeplayer PROC
+    mov byte ptr grid[0], 'P'
+    ret
+placeplayer ENDP
+
+displayboard PROC
+    call Clrscr
+    
+    mov esi, 0
+    mov cl, 0
+    
+row_loop:
+    mov ch, 0
+    
+col_loop:
+    mov al, grid[esi]
+    
+    ; Check what to print
+    cmp al, 'B'
+    je print_building
+    cmp al, 'P'
+    je print_player
+    jmp print_road
+    
+print_building:
+    ; Black building - print 3 block characters
+    mov eax, black + (black * 16)
+    call SetTextColor
+    mov al, 219
+    call WriteChar
+    call WriteChar
+    call WriteChar
+    jmp next_cell
+    
+print_player:
+    ; Yellow player - print 3 characters wide
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    mov al, 'P'
+    call WriteChar
+    mov al, 'P'
+    call WriteChar
+    mov al, 'P'
+    call WriteChar
+    jmp next_cell
+    
+print_road:
+    ; White road - print 3 spaces
+    mov eax, white + (white * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    call WriteChar
+    call WriteChar
+    
+next_cell:
+    inc esi
+    inc ch
+    cmp ch, 20
+    jl col_loop
+    
+    ; Reset color and new line
+    mov eax, white + (black * 16)
+    call SetTextColor
+    call Crlf
+    
+    inc cl
+    cmp cl, 20
+    jl row_loop
+    
+    ; Final reset
+    mov eax, white + (black * 16)
+    call SetTextColor
+    
+    ret
+displayboard ENDP
 
 END main
 
