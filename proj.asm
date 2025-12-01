@@ -1,252 +1,306 @@
-﻿TITLE Rush Hour Taxi Game - Complete Implementation
-INCLUDE Irvine32.inc
+﻿INCLUDE Irvine32.inc
 
-; ============================================================================
-; CONSTANTS
-; ============================================================================
+
+
 .data
-    BOARD_SIZE      EQU 20
+
+
+    ; equ for constants 
+    BOARD_SIZE      EQU 20 
     MAX_PASSENGERS  EQU 5
     MAX_OBSTACLES   EQU 10
     MAX_CARS        EQU 8
     MAX_BONUS       EQU 5
-    
-; ============================================================================
-; GAME STATE DATA
-; ============================================================================
-    ; Board grid (1=road, 0=building)
-    board           BYTE 400 DUP(1)
-    
-    ; Player state
-    playerX         BYTE 0
+    board           BYTE 400 DUP(1) ; 20X20 GRID
+    taxicolor       BYTE 0 ; 0 Y & 1 R
+    playerX         BYTE 0; TAXI
     playerY         BYTE 0
-    playerScore     DWORD 0
-    playerFuel      DWORD 500
-    taxiColor       BYTE 0
-    targetPass      SDWORD -1
-    jobsDone        DWORD 0
-    passengerCount  DWORD 0
-    moveCounter     DWORD 0
+    playerscore     DWORD 0
+    fuel_amt      DWORD 500
+    total_dropsoffs        DWORD 0
+    passengercount  DWORD 0
+    carrying      SDWORD -1 ;NONE RN CARRYING
+
+
+    nameprompt      BYTE "Enter your name: ", 0
+    taxiprompt      BYTE "Choose taxi (1=Yellow or  2=Red or 3=Random): ", 0
+
+
+    ;start menu
+    opt1        BYTE "            1. Start New Game", 0
+    opt2        BYTE "            2. Continue Game", 0
+    opt3        BYTE "            3. Change Difficulty", 0
+    opt4        BYTE "            4. View Leaderboard", 0
+    opt5        BYTE "            5. Instructions", 0
+    opt6        BYTE "            6. Exit", 0
+    opt7      BYTE "            ", 0
+    ;design 
+
+
+    ground BYTE "--------------------------------------------------------------------------------",0
+    ui1      BYTE "          ____  _   _ ____  _   _   _   _  ___  _   _ ____  ", 0
+    ui2      BYTE "         |  _ \| | | / ___|| | | | | | | |/ _ \| | | |  _ \ ", 0
+    ui3      BYTE "         | |_) | | | \___ \| |_| | | |_| | | | | | | | |_) |", 0
+    ui4      BYTE "         |  _ <| |_| |___) |  _  | |  _  | |_| | |_| |  _ < ", 0
+    ui5      BYTE "         |_| \\\___/|____/|_| |_| |_| |_|\___/ \___/|_| \_\\ ", 0
+    ui6      BYTE "                                                              ", 0
+    ui7      BYTE "                     _____  __    __  __ ___                  ", 0
+    ui8      BYTE "                    |_   _|/ /\\ \\ \\/ \\|_ _|                 ", 0
+    ui9      BYTE "                      | | / /\\ \\\\ /\\ \\| |                  ", 0
+    ui10     BYTE "                      |_|/_/  \\_\\_||_/___|                  ", 0
+
+   ; ui1      BYTE "    ####   #  #  ###  #  #   #  #  ####  #  #  ####", 0
+   ; ui2      BYTE "    #  #   #  # #     #  #   #  # #    # #  #  #  #", 0
+    ;ui3      BYTE "    ####   #  #  ##   ####   #### #    # #  #  ####", 0
+    ;ui4      BYTE "    # #    #  #    #  #  #   #  # #    # #  #  # # ", 0
+   ; ui5      BYTE "    #  #    ##  ###   #  #   #  #  ####   ##   #  #", 0
+    ;ui6      BYTE "          ", 0
+    ;ui7      BYTE "                   ##### ###  #  # ####             ", 0
+    ;ui8      BYTE "                     #   #  #  ##   ##              ", 0
+    ;ui9      BYTE "                     #   ###    #   ##              ", 0
+    ;ui10     BYTE "                     #   #  #  ##  ####             ", 0
+    taxi1        BYTE "                    .---------------.", 0
+    taxi2        BYTE "                   /  .-------------. \\", 0
+    taxi3        BYTE "                  /  /   TAXI      \\ \\", 0
+    taxi4        BYTE "                 .  '---------------'  .", 0
+    taxi5        BYTE "                 |  .---------------.  |", 0
+    taxi6        BYTE "                  \\ | O           O | /", 0
+    taxi7        BYTE "                   '._._._._._._._._.'", 0
     
-    ; Passengers
-    passX           BYTE 5 DUP(0)
-    passY           BYTE 5 DUP(0)
-    passDestX       BYTE 5 DUP(0)
-    passDestY       BYTE 5 DUP(0)
-    passPicked      BYTE 5 DUP(0)
-    passActive      BYTE 5 DUP(0)
-    
-    ; Obstacles
-    obstX           BYTE 10 DUP(0)
-    obstY           BYTE 10 DUP(0)
-    obstType        BYTE 10 DUP(0)
-    obstacleCount   DWORD 0
-    
-    ; Other cars
+
     carX            BYTE 8 DUP(0)
     carY            BYTE 8 DUP(0)
-    carDirX         SBYTE 8 DUP(0)
-    carDirY         SBYTE 8 DUP(0)
-    carActive       BYTE 8 DUP(1)
-    carCount        DWORD 0
-    carSpeed        DWORD 3
+    npc_dirX         SBYTE 8 DUP(0)
+    npc_dirY         SBYTE 8 DUP(0)
+    npc_active       BYTE 8 DUP(1)
+    npc_count        DWORD 0
+    npc_speed        DWORD 3
+
+    ;RED TAXI KI SPEED CONTROL 
+    move_speed_counter     DWORD 0
+    buffer_temp      BYTE 100 DUP(?)
+
+
+    passX           BYTE 5 DUP(0) ; PASS ARRAY 5 EACH FOR POSITION , DESTINATION , ACTIVE AND CARRYING
+    passY           BYTE 5 DUP(0)
+    passdestX       BYTE 5 DUP(0)
+    passdestY       BYTE 5 DUP(0)
+    pass_picked      BYTE 5 DUP(0)
+    pass_active      BYTE 5 DUP(0)
+    obstX           BYTE 10 DUP(0)
+    obstY           BYTE 10 DUP(0)
+    obsttype        BYTE 10 DUP(0)
+    obstaclecount   DWORD 0
     
-    ; Bonus items
+
+
+    gamesaveprompt        BYTE "Game saved!", 0
+    gameloadprompt        BYTE "Game loaded!", 0
+    gameloadprompt1        BYTE "No save file found!", 0
     bonusX          BYTE 5 DUP(0)
     bonusY          BYTE 5 DUP(0)
-    bonusActive     BYTE 5 DUP(0)
-    bonusCount      DWORD 0
-    
-    ; Frame counter
-    frameCount      DWORD 0
-    inputChar       BYTE ?
-    playerName      BYTE 30 DUP(?)
-    
-    ; Menu
-    menuChoice      BYTE 0
+    bonusonboard     BYTE 5 DUP(0)
+    bonuscount      DWORD 0
+    framecount      DWORD 0 ; ANIMATION
+    inputchar       BYTE ?
+    play_name      BYTE 30 DUP(?)
+    menuinput      BYTE 0
     difficulty      BYTE 1
+
+
+    currentMode     BYTE 0  
+    timerSeconds    DWORD 0  
+    timerActive     BYTE 0   
+    mode1           BYTE "1. Career Mode ;- Complete deliveries to progress while the fuel doesnt run out", 0
+    mode2           BYTE "2. Time Mode :- Score as much as possible in 120 seconds", 0
+    mode3           BYTE "3. Endless Mode :- Play forever while increasing difficulty PRESS x to exit", 0
+
+    mode4           BYTE "Select Mode (1-3): ", 0
+    modeTitle       BYTE "GAME MODE SELECTION", 0
+
     
-    ; File handling
-    fileHandle      DWORD ?
-    saveFilename    BYTE "savegame.txt", 0
-    hsFilename      BYTE "highscores.txt", 0
-    bytesWritten    DWORD ?
-    
-    ; Leaderboard
+   
+
+
+    ; end of game over
+    gameover1       BYTE "GAME OVER!", 0
+    gameover2       BYTE "Reason: Out of Fuel!", 0
+    gameover3       BYTE "Reason: Score went negative!", 0
+    final_score   BYTE "Final Score: ", 0
+    end_game        BYTE "Thanks for playing!", 0
+     ; difficulty
+    diff1           BYTE "DIFFICULTY LEVELS :  " , 0
+    diff3           BYTE "2. Medium - 500 Fuel, 7 Obstacles & Normal Cars", 0
+    diff4           BYTE "3. Hard   - 300 Fuel, 10 Obstacles & Fast Cars", 0
+    diff2           BYTE "1. Easy    - 1000 Fuel, 5 Obstacles &  Slow Cars", 0    
+    diff5           BYTE "Select (1-3) : ", 0
+    ;File
+    filehandle      DWORD ?
+    savegamefilenametxt    BYTE "savegame.txt", 0
+    filenametxt      BYTE "highscores.txt", 0
+    bytes_written     DWORD ?
+    ;Leaderboard
     highScores      DWORD 10 DUP(0)
     highNames       BYTE 300 DUP(?)
     tempScore       DWORD ?
-
-; ============================================================================
-; UI STRINGS (NO 0Ah ALLOWED)
-; ============================================================================
-    ground BYTE "================================================================================",0
+    ;instructions menu
+    inst1           BYTE "instructions : ", 0
     
-    ; Title
-    titleLine1      BYTE "          ____  _   _ ____  _   _   _   _  ___  _   _ ____  ", 0
-    titleLine2      BYTE "         |  _ \| | | / ___|| | | | | | | |/ _ \| | | |  _ \ ", 0
-    titleLine3      BYTE "         | |_) | | | \___ \| |_| | | |_| | | | | | | | |_) |", 0
-    titleLine4      BYTE "         |  _ <| |_| |___) |  _  | |  _  | |_| | |_| |  _ < ", 0
-    titleLine5      BYTE "         |_| \_\\___/|____/|_| |_| |_| |_|\___/ \___/|_| \_\\", 0
-    titleLine6      BYTE "                                                              ", 0
-    titleLine7      BYTE "                     _____  __    __  __ ___                  ", 0
-    titleLine8      BYTE "                    |_   _|/ /\\ \\ \\/ \\|_ _|                 ", 0
-    titleLine9      BYTE "                      | | / /\\ \\\\ /\\ \\| |                  ", 0
-    titleLine10     BYTE "                      |_|/_/  \\_\\_||_/___|                  ", 0
-    
-    taxiArt1        BYTE "                    .---------------.", 0
-    taxiArt2        BYTE "                   /  .-------------. \\", 0
-    taxiArt3        BYTE "                  /  /   TAXI      \\ \\", 0
-    taxiArt4        BYTE "                 .  '---------------'  .", 0
-    taxiArt5        BYTE "                 |  .---------------.  |", 0
-    taxiArt6        BYTE "                  \\ | O           O | /", 0
-    taxiArt7        BYTE "                   '._._._._._._._._.'", 0
-    
-    ; Menu options
-    menuOpt1        BYTE "            1. Start New Game", 0
-    menuOpt2        BYTE "            2. Continue Game", 0
-    menuOpt3        BYTE "            3. Change Difficulty", 0
-    menuOpt4        BYTE "            4. View Leaderboard", 0
-    menuOpt5        BYTE "            5. Instructions", 0
-    menuOpt6        BYTE "            6. Exit", 0
-    menuPrompt      BYTE "            Use Arrow Keys to select, Enter to confirm", 0
-    
-    ; Instructions
-    inst1           BYTE "CONTROLS:", 0
+    inst12          BYTE "YELLOW TAXI MODE:", 0
+    inst13          BYTE "  Faster movement", 0
+    inst14          BYTE "  Obstacle damage -4 points", 0
+    inst15          BYTE "  Car collision -2 points", 0
     inst2           BYTE "  W/A/S/D - Move taxi", 0
-    inst3           BYTE "  SPACE - Pick up/drop passenger", 0
-    inst4           BYTE "  P - Pause game", 0
+    inst3           BYTE "  SPACEbar - Pick up/drop passenger", 0
+    inst4           BYTE "  P - Pause game & L - to save", 0
     inst5           BYTE "  X - Exit to menu", 0
     inst6           BYTE "OBJECTIVE:", 0
-    inst7           BYTE "  Pick up stick figures (O|)", 0
-    inst8           BYTE "  Drop at GREEN destinations (DST)", 0
-    inst9           BYTE "  +10 points per successful delivery", 0
-    inst10          BYTE "  Collect $ for bonus +10 points", 0
-    inst11          BYTE "  Avoid obstacles and cars!", 0
-    inst12          BYTE "YELLOW TAXI:", 0
-    inst13          BYTE "  Faster movement", 0
-    inst14          BYTE "  Obstacle damage: -4 points", 0
-    inst15          BYTE "  Car collision: -2 points", 0
+    inst7           BYTE "  Pick up stick figures (\O/)", 0
+    inst8           BYTE "  Drop at GREEN destinations (*DST)", 0
+    inst9           BYTE "  +10 points per delivery", 0
+    inst10          BYTE "  Collect gems and other precious items for bonus +10 points", 0
+    inst11          BYTE "  Avoid obstacles and other cars!", 0
+
     inst16          BYTE "RED TAXI:", 0
     inst17          BYTE "  Slower but tougher", 0
-    inst18          BYTE "  Obstacle damage: -2 points", 0
-    inst19          BYTE "  Car collision: -3 points", 0
-    inst20          BYTE "Hit passenger: -5 points", 0
-    inst21          BYTE "Every 2 deliveries = Faster cars!", 0
-    inst22          BYTE "Press any key to continue...", 0
+    inst18          BYTE "  Obstacle damage -2 points", 0
+    inst19          BYTE "  Car collision -3 points", 0
+    inst20          BYTE "Hit passenger -5 points", 0
+    inst21          BYTE "After every 2 deliveries you get Faster cars! ", 0
+    inst22          BYTE "Press any key to continue", 0
+    ; leaderboard
+    lb1             BYTE "TOP 10 HIGH SCORES: ", 0
+    lb2             BYTE "Rank   Name                         Score", 0
+    lb3             BYTE "------------------------------------------", 0
+    lb4             BYTE "No scores yet  ", 0
+    lb5             BYTE "Press any key to continue", 0
     
-    ; Difficulty
-    diff1           BYTE "DIFFICULTY LEVELS:", 0
-    diff2           BYTE "1. Easy   - 1000 Fuel, 5 Obstacles, Slow Cars", 0
-    diff3           BYTE "2. Medium - 500 Fuel, 7 Obstacles, Normal Cars", 0
-    diff4           BYTE "3. Hard   - 300 Fuel, 10 Obstacles, Fast Cars", 0
-    diff5           BYTE "Select (1-3): ", 0
+    ;top of screen
+     timeRemaining   BYTE " |  Time: ", 0
+    timeUp          BYTE "TIME'S UP!", 0
+    score_display        BYTE "Score: ", 0
+    fuel_display         BYTE " | Fuel: ", 0
+    pass_display         BYTE " | Active: ", 0
+    mode_display         BYTE " | Mode: ", 0
+    mode_career_txt      BYTE "Career", 0
+    mode_time_txt        BYTE "Time", 0
+    mode_endless_txt     BYTE "Endless", 0
+    donedropped_display         BYTE " | Delivered: ", 0
+    carrying_display        BYTE ">>> Carrying passenger!!!! Go to GREEN destination NOWW! (you cannot pickup another till you dropoff) <<<", 0
+    items_on_board       BYTE "Taxi=[T]  Passenger=\O/  Tree=TR  Box=[#]  Car=[C]  Bonus=$ , <> , etc. ", 0
+    endless_session_high    DWORD 0
+    endless_high_msg        BYTE " | Session Best: ", 0
     
-    ; Leaderboard
-    lb1             BYTE "TOP 10 HIGH SCORES:", 0
-    lb2             BYTE "Rank  Name                          Score", 0
-    lb3             BYTE "----  ----------------------------  -----", 0
-    lb4             BYTE "No scores yet!", 0
-    lb5             BYTE "Press any key to continue...", 0
-    
-    ; Game prompts
-    namePrompt      BYTE "Enter your name: ", 0
-    taxiPrompt      BYTE "Choose taxi (1=Yellow, 2=Red, 3=Random): ", 0
-    
-    ; HUD strings
-    strScore        BYTE "Score: ", 0
-    strFuel         BYTE " | Fuel: ", 0
-    strPass         BYTE " | Active: ", 0
-    strJobs         BYTE " | Delivered: ", 0
-    
-    carryMsg        BYTE ">>> Carrying passenger! Go to GREEN destination! <<<", 0
-    legendMsg       BYTE "Taxi=[T]  Passenger=O|  Tree=TR  Box=BOX  Car=[C]  Bonus=$", 0
-    
-    ; Game over
-    gameOver1       BYTE "GAME OVER!", 0
-    gameOver2       BYTE "Reason: Out of Fuel!", 0
-    gameOver3       BYTE "Reason: Score went negative!", 0
-    finalScoreMsg   BYTE "Final Score: ", 0
-    thankMsg        BYTE "Thanks for playing!", 0
-    
-    ; Save/load
-    saveMsg1        BYTE "Game saved!", 0
-    loadMsg1        BYTE "Game loaded!", 0
-    loadMsg2        BYTE "No save file found!", 0
-    tempBuffer      BYTE 100 DUP(?)
+     pauseTitle      BYTE "=== GAME PAUSED ===", 0
+    pauseMsg1       BYTE "Press P to Resume", 0
+    pauseMsg2       BYTE "Press X to Exit to Menu", 0
+
+
+
+
+
+
+;-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 .code
-; ============================================================================
-; MAIN PROCEDURE (FIXED)
-; ============================================================================
+
 main PROC
     call Randomize
     call LoadHighScores
     
-MainMenuLoop:
-    call ShowMainMenu
-    
+menu_choiceLOOP: ;DISPLAY MENU AND TAKE CHOICE INPUT
+    call DISPLAY
     xor eax, eax
-    mov al, menuChoice
-
+    mov al, menuinput
     cmp al, 1
     je StartNew
     cmp al, 2
     je ContinueGame
     cmp al, 3
-    je ChangeDiff
+    je DIFFICULTY_OPT
     cmp al, 4
     je ShowLeader
     cmp al, 5
-    je ShowInst
+    je show_instructions
     cmp al, 6
-    je ExitProgram
+    je END_ALL
+    jmp menu_choiceLOOP
     
-    jmp MainMenuLoop
-    
+
+
+    ;CHOICE LEIKAR APPROPRIATE FLOW FOLLOW OR CALL 
 StartNew:
-    call GetPlayerInfo
-    call InitGame
+    call Playerinfo_get
+    call SelectGameMode
+    
+    ; *** Reset endless session high if endless mode ***
+    mov al, currentMode
+    cmp al, 2
+    jne NotEndlessStart
+    mov endless_session_high, 0
+    
+NotEndlessStart:
+    call initialize_newgame 
     call GameLoop
+    
+    ; *** Only update leaderboard if NOT endless ***
+    mov al, currentMode
+    cmp al, 2
+    je SkipLeaderboardUpdate
     call UpdateHighScores
-    jmp MainMenuLoop
+    
+SkipLeaderboardUpdate:
+jmp menu_choiceLOOP
     
 ContinueGame:
+
     call LoadGame
-    jc MainMenuLoop
+    jc menu_choiceLOOP
     call GameLoop
     call UpdateHighScores
-    jmp MainMenuLoop
+    jmp menu_choiceLOOP
     
-ChangeDiff:
+DIFFICULTY_OPT:
+
     call ChangeDifficulty
-    jmp MainMenuLoop
+    jmp menu_choiceLOOP
     
 ShowLeader:
+
     call ShowLeaderboard
-    jmp MainMenuLoop
+
+    jmp menu_choiceLOOP
     
-ShowInst:
+show_instructions:
+
     call ShowInstructions
-    jmp MainMenuLoop
+
+    jmp menu_choiceLOOP
     
-ExitProgram:
+
+
+END_ALL:
+
     call Clrscr
     mov eax, yellow + (black * 16)
     call SetTextColor
+
     mov al, 'T'
     call WriteChar
     mov al, 'h'
     call WriteChar
+
     mov al, 'a'
     call WriteChar
     mov al, 'n'
     call WriteChar
+
     mov al, 'k'
     call WriteChar
     mov al, 's'
     call WriteChar
+
     mov al, ' '
     call WriteChar
     mov al, 'f'
@@ -255,14 +309,17 @@ ExitProgram:
     call WriteChar
     mov al, 'r'
     call WriteChar
+
     mov al, ' '
     call WriteChar
     mov al, 'p'
     call WriteChar
+
     mov al, 'l'
     call WriteChar
     mov al, 'a'
     call WriteChar
+
     mov al, 'y'
     call WriteChar
     mov al, 'i'
@@ -273,328 +330,927 @@ ExitProgram:
     call WriteChar
     mov al, '!'
     call WriteChar
+
+
     call Crlf
     call WaitMsg
+
+
     exit
+
+
 main ENDP
-; ============================================================================
-; SHOW MAIN MENU (SIMPLE NUMBER SELECTION)
-; ============================================================================
-ShowMainMenu PROC
-    push eax
+
+;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DISPLAY PROC
+   
+   push eax
     push edx
     
     call Clrscr
     
-    ; Title
-    mov eax, lightCyan + (black * 16)
+    mov eax,  magenta + (black * 16)
     call SetTextColor
-    
-    mov edx, OFFSET titleLine1
+    ;rushhour bara display
+    mov edx, OFFSET ui1
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine2
+    mov edx, offset ui2
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine3
+    mov edx, offset ui3
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine4
+    mov edx, offset ui4
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine5
+    mov edx, offset ui5
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine6
+    mov edx, offset ui6
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine7
+    mov edx, offset ui7
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine8
+    mov edx, offset ui8
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine9
+    mov edx, offset ui9
     call WriteString
     call Crlf
-    mov edx, OFFSET titleLine10
+    mov edx, offset ui10
     call WriteString
     call Crlf
     call Crlf
-    
-    ; Taxi art
-    mov eax, yellow + (black * 16)
+    mov eax, cyan + (black * 16)
     call SetTextColor
-    
-    mov edx, OFFSET taxiArt1
+    ;car dummy display 
+    mov edx, offset taxi1
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt2
+    mov edx, offset taxi2
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt3
+    mov edx, offset taxi3
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt4
+    mov edx, offset taxi4
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt5
+    mov edx, offset taxi5
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt6
+    mov edx, offset taxi6
     call WriteString
     call Crlf
-    mov edx, OFFSET taxiArt7
+    mov edx, offset taxi7
     call WriteString
     call Crlf
     call Crlf
-    
-    ; Menu options
+    ;options
     mov eax, white + (black * 16)
     call SetTextColor
-    
-    mov edx, OFFSET menuOpt1
+    mov edx, offset opt1
     call WriteString
     call Crlf
-    mov edx, OFFSET menuOpt2
+    mov edx, offset opt2
     call WriteString
     call Crlf
-    mov edx, OFFSET menuOpt3
+    mov edx, offset opt3
     call WriteString
     call Crlf
-    mov edx, OFFSET menuOpt4
+    mov edx, offset opt4
     call WriteString
     call Crlf
-    mov edx, OFFSET menuOpt5
+    mov edx, offset opt5
     call WriteString
     call Crlf
-    mov edx, OFFSET menuOpt6
+    mov edx, offset opt6
     call WriteString
     call Crlf
     call Crlf
+
+
     
     mov eax, yellow + (black * 16)
     call SetTextColor
-    mov edx, OFFSET menuPrompt
+    mov edx, offset opt7
     call WriteString
     call Crlf
-    
-    ; Simple prompt
+    ;prompt
     mov eax, white + (black * 16)
     call SetTextColor
     mov al, '>'
     call WriteChar
     mov al, ' '
     call WriteChar
-    
-    ; Wait for number input
+
+
+
+    ;choice input
     call ReadChar
     
+
+
     cmp al, '1'
-    je Set1
+    je option1
     cmp al, '2'
-    je Set2
+    je option2
     cmp al, '3'
-    je Set3
+    je option3
     cmp al, '4'
-    je Set4
+    je option4
     cmp al, '5'
-    je Set5
+    je option5
     cmp al, '6'
-    je Set6
+    je option6
     
-    ; Invalid, default to 1
-    mov menuChoice, 1
-    jmp MenuDone
+    ;invalid so default 1 start new game
+    mov menuinput, 1
+    jmp option_done
     
-Set1:
-    mov menuChoice, 1
-    jmp MenuDone
-Set2:
-    mov menuChoice, 2
-    jmp MenuDone
-Set3:
-    mov menuChoice, 3
-    jmp MenuDone
-Set4:
-    mov menuChoice, 4
-    jmp MenuDone
-Set5:
-    mov menuChoice, 5
-    jmp MenuDone
-Set6:
-    mov menuChoice, 6
-    jmp MenuDone
+
+
+option1:
+    mov menuinput, 1
+    jmp option_done
+
+option2:
+    mov menuinput, 2
+    jmp option_done
+
+option3:
+    mov menuinput, 3
+    jmp option_done
+
+option4:
+    mov menuinput, 4
+    jmp option_done
+option5:
+    mov menuinput, 5
+    jmp option_done
+option6:
+    mov menuinput, 6
+    jmp option_done
     
-MenuDone:
+
+
+option_done:
     pop edx
     pop eax
     ret
-ShowMainMenu ENDP
 
-; ============================================================================
-; GET PLAYER INFO (FIXED - NO EXTRA WAIT)
-; ============================================================================
-GetPlayerInfo PROC
+
+
+DISPLAY ENDP
+
+
+
+
+;------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ShowInstructions PROC
+    push eax
+    push edx
+    
+    call Clrscr
+    mov eax, green + (black * 16)
+    call SetTextColor
+    
+    mov edx, OFFSET inst1
+    call WriteString
+    call Crlf
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET inst2
+    call WriteString
+    call Crlf
+    mov edx, offset inst3
+    call WriteString
+    call Crlf
+    mov edx, offset inst4
+    call WriteString
+    call Crlf
+    mov edx, offset inst5
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov eax, lightCyan + (black * 16)
+    call SetTextColor
+    mov edx, offset inst6
+    call WriteString
+    call Crlf
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, offset inst7
+    call WriteString
+    call Crlf
+    mov edx, offset inst8
+    call WriteString
+    call Crlf
+    mov edx, offset inst9
+    call WriteString
+    call Crlf
+    mov edx, offset inst10
+    call WriteString
+    call Crlf
+    mov edx, offset inst11
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    mov edx, offset inst12
+    call WriteString
+    call Crlf
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, offset inst13
+    call WriteString
+    call Crlf
+    mov edx, offset inst14
+    call WriteString
+    call Crlf
+    mov edx, offset inst15
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov eax, red + (black * 16)
+    call SetTextColor
+    mov edx, offset inst16
+    call WriteString
+    call Crlf
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, offset inst17
+    call WriteString
+    call Crlf
+    mov edx, offset inst18
+    call WriteString
+    call Crlf
+    mov edx, offset inst19
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov edx, offset inst20
+    call WriteString
+    call Crlf
+    mov edx, OFFSET inst21
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov edx, OFFSET inst22
+    call WriteString
+    call ReadChar
+    
+    ; *** FIX #4: Properly restore registers and return ***
+    pop edx
+    pop eax
+    ret
+ShowInstructions ENDP
+;--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Playerinfo_get PROC
+
     push eax
     push ecx
     push edx
     
     call Clrscr
     
-    ; Get name
+    ;graphics
+    mov dh, 8
+    mov dl, 25
+    call Gotoxy
+    mov eax, cyan + (black * 16)
+    call SetTextColor
+    mov al, '-'
+
+    mov ecx, 30
+
+
+PrintTopBorder:
+  call WriteChar
+  loop PrintTopBorder
+
+
+
+    mov dh, 9
+    mov dl, 30
+    call Gotoxy
+    mov eax, magenta + (black * 16)
+    call SetTextColor
+    mov al, 'P'
+    call WriteChar
+    mov al, 'L'
+    call WriteChar
+    mov al, 'A'
+    call WriteChar
+    mov al, 'Y'
+    call WriteChar
+    mov al, 'E'
+    call WriteChar
+    mov al, 'R'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, 'S'
+    call WriteChar
+    mov al, 'E'
+    call WriteChar
+    mov al, 'T'
+    call WriteChar
+    mov al, 'U'
+    call WriteChar
+    mov al, 'P'
+    call WriteChar
+    mov dh, 10
+    mov dl, 25
+    call Gotoxy
+    mov eax, cyan + (black * 16)
+    call SetTextColor
+
+
+    mov al, '-'
+    mov ecx, 30
+
+
+PrintBottomBorder:
+
+    call WriteChar
+    loop PrintBottomBorder
+    
+
+    ; Name input prompt
+    mov dh, 13
+    mov dl, 28
+    call Gotoxy
     mov eax, white + (black * 16)
     call SetTextColor
-    mov edx, OFFSET namePrompt
-    call WriteString
-    mov edx, OFFSET playerName
-    mov ecx, 29
-    call ReadString
-    call Crlf
-    
-    ; Choose taxi
-    mov edx, OFFSET taxiPrompt
-    call WriteString
-    
-GetTaxiInput:
-    call ReadChar
+    mov al, 'E'
     call WriteChar
-    call Crlf
+    mov al, 'n'
+    call WriteChar
+    mov al, 't'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, 'Y'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'u'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+
+
+    mov al, ' '
+    call WriteChar
+
+
+    mov al, 'N'
+    call WriteChar
+    mov al, 'a'
+    call WriteChar
+    mov al, 'm'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, ':'
+    call WriteChar
+    
+    ;-----------
+    ;box for name input
+    mov dh, 14
+    mov dl, 25
+    call Gotoxy
+    mov eax, black + (lightGray * 16)
+    call SetTextColor
+    mov al, ' '
+    mov ecx, 30
+
+
+PrintNameBox:
+
+    call WriteChar
+    loop PrintNameBox
+    
+
+  
+    mov dh, 14;name input leina
+    mov dl, 26
+    call Gotoxy
+    mov edx, offset play_name
+    mov ecx, 28
+    call ReadString
+    mov dh, 17;Taxi choices red or yellow wala display
+    mov dl, 27
+    call Gotoxy
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    mov al, 'C'
+    call WriteChar
+    mov al, 'h'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, 'Y'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'u'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, 'T'
+    call WriteChar
+    mov al, 'a'
+    call WriteChar
+    mov al, 'x'
+    call WriteChar
+    mov al, 'i'
+    call WriteChar
+    mov al, ':'
+    call WriteChar
+
+    ;yelow then red hen random taxi in display to choose from 
+
+
+    mov dh, 19
+    mov dl, 23
+    call Gotoxy
+    mov eax, black + (yellow * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, '1'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, 'Y'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 'l'
+    call WriteChar
+    mov al, 'l'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'w'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, '('
+    call WriteChar
+    mov al, 'F'
+    call WriteChar
+    mov al, 'a'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    mov al, 't'
+    call WriteChar
+    mov al, ')'
+    call WriteChar
+    
+
+
+    
+    mov dh, 20;red wali taxi
+    mov dl, 23
+    call Gotoxy
+    mov eax, yellow + (red * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, '2'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, 'R'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 'd'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, '('
+    call WriteChar
+    mov al, 'T'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'u'
+    call WriteChar
+    mov al, 'g'
+    call WriteChar
+    mov al, 'h'
+    call WriteChar
+    mov al, ')'
+    call WriteChar
+    
+    
+
+
+    mov dh, 21;random
+    mov dl, 23
+    call Gotoxy
+    mov eax, white + (blue * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, '3'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, 'R'
+    call WriteChar
+    mov al, 'a'
+    call WriteChar
+    mov al, 'n'
+    call WriteChar
+    mov al, 'd'
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'm'
+    call WriteChar
+  
+
+
+  ; ------------------------
+  ;take input taxi
+
+    mov dh, 23
+    mov dl, 27
+    call Gotoxy
+    mov eax, lightGreen + (black * 16)
+    call SetTextColor
+    mov al, 'P'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, '1'
+    call WriteChar
+    mov al, ','
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, '2'
+    call WriteChar
+    mov al, ','
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    mov al, '3'
+    call WriteChar
+    mov al, ':'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+   
+   
+
+taxi_input:
+
+    call ReadChar
     
     cmp al, '1'
-    je SetYellow
+    je yellow_select
     cmp al, '2'
-    je SetRed
+    je red_select
     cmp al, '3'
-    je SetRandom
+    je random_select
     
-    ; Invalid input, ask again
-    call Crlf
-    mov edx, OFFSET taxiPrompt
-    call WriteString
-    jmp GetTaxiInput
+    ;invalid 
+    ;so wait for when proper
+
+    jmp taxi_input
     
-SetRandom:
+
+
+
+random_select:
+
     mov eax, 2
     call RandomRange
-    mov taxiColor, al
-    jmp InfoDone
+
+    mov taxicolor, al
+    jmp show_selected_taxi
     
-SetYellow:
-    mov taxiColor, 0
-    jmp InfoDone
+
+yellow_select:
+
+    mov taxicolor, 0
+    jmp show_selected_taxi
+  
+  
+
+red_select:
+
+    mov taxicolor, 1
+
+
+show_selected_taxi:
+
+    mov dh, 23
+    mov dl, 45
+    call Gotoxy
+    mov al, taxicolor
+    cmp al, 0
+    je showyellow
+    mov eax, yellow + (red * 16)
+    call SetTextColor
+    mov al, '['
+    call WriteChar
+    mov al, 'T'
+    call WriteChar
+    mov al, ']'
+
+
+    call WriteChar
+
+    jmp delaystart
     
-SetRed:
-    mov taxiColor, 1
+
+showyellow:
+
+    mov eax, black + (yellow * 16)
+    call SetTextColor
+    mov al, '['
+    call WriteChar
+    mov al, 'T'
+    call WriteChar
+
+    mov al, ']'
+    call WriteChar
     
-InfoDone:
-    ; NO EXTRA WAIT - GO DIRECTLY TO GAME
+delaystart:
+    
+    mov eax, 500;delay slecetion 
+    call Delay
+    
     pop edx
     pop ecx
     pop eax
     ret
-GetPlayerInfo ENDP
 
-; ============================================================================
-; INITIALIZE GAME
-; ============================================================================
+
     
-; ============================================================================
-; INITIALIZE GAME (CLEAN VERSION)
-; ============================================================================
-InitGame PROC
+Playerinfo_get ENDP
+
+    
+; --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+initialize_newgame  PROC
+
     push eax
     push ebx
     push ecx
     push esi
     
-    ; Reset state
-    mov playerX, 0
+
+
+   mov playerX, 0; start from start 0,0
     mov playerY, 0
-    mov playerScore, 0
-    mov jobsDone, 0
-    mov targetPass, -1
-    mov frameCount, 0
-    mov moveCounter, 0
+
+
+    mov playerscore, 0
+    mov total_dropsoffs, 0
+
+    ; not carrying anything shurro mai
+    mov carrying, -1 
+    mov framecount, 0
+    mov move_speed_counter, 0
     
-    ; Apply difficulty
+  
+
     call ApplyDifficulty
-    
-    ; Generate board
     call GenerateBoard
     
-    ; Make sure starting position is a road
-    mov esi, OFFSET board
+ 
+
+    mov esi, offset board; start wali jaga road honi chahiye 
     mov BYTE PTR [esi], 1
     
-   ; Spawn 3-5 passengers
-    mov eax, 3
+  
+    mov eax, 3;spawn pass
     call RandomRange
     add eax, 3
     
+
     mov ecx, eax
     xor esi, esi
     
+
 SpawnPass:
+
     cmp ecx, 0
-    je PassDone
-    cmp esi, MAX_PASSENGERS
-    jge PassDone
+
+    je passengers_placed
+    cmp esi, MAX_PASSENGERS 
+    jge passengers_placed
     
     push ecx
     
-    call FindRoadPosition
-    mov edi, OFFSET passX
+    
+passengers_position_find :
+
+    call road_position_find  ;find position for passenger (not at 0,0)
+    cmp al, 0 ;doublecheck kay 0,0 par spawn nah ho
+
+    jne passenger_pos_isfine
+    cmp ah, 0
+
+    jne passenger_pos_isfine
+
+    jmp passengers_position_find 
+    
+
+
+passenger_pos_isfine:
+    mov edi, offset passX
     add edi, esi
     mov [edi], al
     
-    mov edi, OFFSET passY
+    mov edi, offset passY
     add edi, esi
     mov [edi], ah
     
-    call FindRoadPosition
-    mov edi, OFFSET passDestX
+    
+destination_position_find :
+    
+    call road_position_find 
+    
+  
+    cmp al, 0
+    jne dest_notsame_aspick
+    cmp ah, 0
+    jne dest_notsame_aspick
+    jmp destination_position_find 
+    
+
+
+dest_notsame_aspick:
+    mov edi, offset passX
+    add edi, esi
+    cmp al, [edi]
+
+    jne destination_ok
+    mov edi, offset passY
+    add edi, esi
+    cmp ah, [edi]
+    je destination_position_find 
+    
+destination_ok:
+
+    mov edi, offset passdestX
     add edi, esi
     mov [edi], al
-    
-    mov edi, OFFSET passDestY
+    mov edi, offset passdestY
     add edi, esi
     mov [edi], ah
-    
-    mov edi, OFFSET passPicked
+    mov edi, offset pass_picked
     add edi, esi
     mov BYTE PTR [edi], 0
-    
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     mov BYTE PTR [edi], 1
-    
+  
     inc esi
     pop ecx
     dec ecx
     jmp SpawnPass
     
-PassDone:
-    ; Initialize remaining slots as inactive
+
+
+passengers_placed:
     mov ecx, MAX_PASSENGERS
     sub ecx, esi
     
-ClearRest:
+
+clear_sab:
+
     cmp ecx, 0
-    je SkipObstacles
+    je skip_obs
     
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     mov BYTE PTR [edi], 0
     
     inc esi
     dec ecx
-    jmp ClearRest
+    jmp clear_sab
+
+
+skip_obs:
+
+    mov eax, obstaclecount
+    cmp eax, 0
+    je skip_obspawn
+    
+    mov ecx, eax
+    xor esi, esi
     
 
-SkipObstacles:
-    ; Spawn 5 cars
-    mov carCount, 5
+spawn_obs:
+    cmp ecx, 0
+    je ObstDone
+    cmp esi, 10 ;total 10 or max 10
+    jge ObstDone
+    
+    push ecx
+    
+    
+FindObstaclePos:
+    call road_position_find 
+  
+    cmp al, 0 ; 0 ,0 check
+    jne ObstPosOK
+    cmp ah, 0
+    jne ObstPosOK
+   
+    jmp FindObstaclePos    ; (0,0) so find another position
+    
+ObstPosOK:
+    mov edi, offset obstX
+    add edi, esi
+    mov [edi], al
+    
+    mov edi, offset obstY
+    add edi, esi
+    mov [edi], ah
+    
+    mov eax, 2
+    call RandomRange
+    mov edi, offset obsttype
+    add edi, esi
+    mov [edi], al
+    
+    inc esi
+    pop ecx
+    dec ecx
+    jmp spawn_obs
+    
+ObstDone:
+skip_obspawn:
+    ; Spawn 5 cars (continue with existing car spawn code)
+    mov npc_count, 5
     mov ecx, 5
     xor esi, esi
     
@@ -603,12 +1259,12 @@ SpawnCar:
     je CarDone
     push ecx
     
-    call FindRoadPosition
-    mov edi, OFFSET carX
+    call road_position_find 
+    mov edi, offset carX
     add edi, esi
     mov [edi], al
     
-    mov edi, OFFSET carY
+    mov edi, offset carY
     add edi, esi
     mov [edi], ah
     
@@ -623,42 +1279,42 @@ SpawnCar:
     je DirLeft
     
 DirRight:
-    mov edi, OFFSET carDirX
+    mov edi, offset npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 1
-    mov edi, OFFSET carDirY
+    mov edi, offset npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 0
     jmp DirDone
     
 DirUp:
-    mov edi, OFFSET carDirX
+    mov edi, offset npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 0
-    mov edi, OFFSET carDirY
+    mov edi, offset npc_dirY
     add edi, esi
     mov BYTE PTR [edi], -1
     jmp DirDone
     
 DirDown:
-    mov edi, OFFSET carDirX
+    mov edi, offset npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 0
-    mov edi, OFFSET carDirY
+    mov edi, offset npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 1
     jmp DirDone
     
 DirLeft:
-    mov edi, OFFSET carDirX
+    mov edi, offset npc_dirX
     add edi, esi
     mov BYTE PTR [edi], -1
-    mov edi, OFFSET carDirY
+    mov edi, offset npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 0
     
 DirDone:
-    mov edi, OFFSET carActive
+    mov edi, offset npc_active
     add edi, esi
     mov BYTE PTR [edi], 1
     
@@ -672,7 +1328,7 @@ CarDone:
     mov eax, 3
     call RandomRange
     add eax, 3
-    mov bonusCount, eax
+    mov bonuscount, eax
     
     mov ecx, eax
     xor esi, esi
@@ -682,16 +1338,16 @@ SpawnBonus:
     je BonusDone
     push ecx
     
-    call FindRoadPosition
-    mov edi, OFFSET bonusX
+    call road_position_find 
+    mov edi, offset bonusX
     add edi, esi
     mov [edi], al
     
-    mov edi, OFFSET bonusY
+    mov edi, offset bonusY
     add edi, esi
     mov [edi], ah
     
-    mov edi, OFFSET bonusActive
+    mov edi, offset bonusonboard
     add edi, esi
     mov BYTE PTR [edi], 1
     
@@ -706,7 +1362,7 @@ BonusDone:
     pop ebx
     pop eax
     ret
-InitGame ENDP
+initialize_newgame  ENDP
  
 
 ; ============================================================================
@@ -723,21 +1379,21 @@ ApplyDifficulty PROC
     je SetMedium
     
 SetHard:
-    mov playerFuel, 300
-    mov obstacleCount, 10
-    mov carSpeed, 2
+    mov fuel_amt, 300
+    mov obstaclecount, 10
+    mov npc_speed, 2
     jmp DiffDone
     
 SetMedium:
-    mov playerFuel, 500
-    mov obstacleCount, 7
-    mov carSpeed, 3
+    mov fuel_amt, 500
+    mov obstaclecount, 7
+    mov npc_speed, 3
     jmp DiffDone
     
 SetEasy:
-    mov playerFuel, 1000
-    mov obstacleCount, 5
-    mov carSpeed, 5
+    mov fuel_amt, 1000
+    mov obstaclecount, 5
+    mov npc_speed, 5
     
 DiffDone:
     pop eax
@@ -745,7 +1401,7 @@ DiffDone:
 ApplyDifficulty ENDP
 
 ; ============================================================================
-; GENERATE BOARD - NEW VERSION WITH VISIBLE BUILDINGS
+; GENERATE BOARD 
 ; ============================================================================
 GenerateBoard PROC
     push eax
@@ -755,7 +1411,7 @@ GenerateBoard PROC
     push esi
     
     ; First, initialize all as roads (1)
-    mov esi, OFFSET board
+    mov esi, offset board
     mov ecx, 400
     
 InitAllRoads:
@@ -777,8 +1433,14 @@ BuildLoop:
     call RandomRange
     
     ; Calculate index: row * 20 + col
-    imul ebx, 20
-    add ebx, eax
+    
+push eax
+mov eax, ebx
+mov edx, 20
+mul edx
+mov ebx, eax
+pop eax
+add ebx, eax
     
     ; Safety checks
     cmp ebx, 0
@@ -791,7 +1453,7 @@ BuildLoop:
     je SkipBuilding
     
     ; Check if already a building
-    mov esi, OFFSET board
+    mov esi, offset board
     add esi, ebx
     cmp BYTE PTR [esi], 0
     je SkipBuilding
@@ -808,7 +1470,7 @@ NextBuilding:
     loop BuildLoop
     
     ; Ensure player starting position (0,0) is always a road
-    mov esi, OFFSET board
+    mov esi, offset board
     mov BYTE PTR [esi], 1
     
     ; Create guaranteed road corridors (every 5th row)
@@ -826,12 +1488,13 @@ EnsureRowRoads:
     cmp edx, 0
     jne SkipThisRow
     
-    ; Make entire row into roads
-    push ebx
-    mov eax, ebx
-    imul eax, 20
-    mov esi, OFFSET board
-    add esi, eax
+   ; Make entire row into roads
+push ebx
+mov eax, ebx
+mov edx, 20
+mul edx
+mov esi, offset board
+add esi, eax
     
     mov ecx, 20
 MakeRowRoad:
@@ -863,7 +1526,7 @@ ColRoadLoop:
     
     ; Make entire column into roads
     push ebx
-    mov esi, OFFSET board
+    mov esi, offset board
     add esi, ebx
     
     mov ecx, 20
@@ -889,17 +1552,30 @@ GenerateBoard ENDP
 ; ============================================================================
 ; FIND RANDOM ROAD POSITION (WITH TIMEOUT)
 ; ============================================================================
-FindRoadPosition PROC
+
+road_position_find  PROC
     push ebx
     push ecx
+    push edx
     push esi
     
-    mov ecx, 1000  ; Maximum 1000 attempts
+    mov ecx, 500  ; Try 500 times
     
 FindLoop:
     cmp ecx, 0
     je UseFallback
     
+    ; 80% chance: spawn near a road corridor (guaranteed reachable)
+    push ecx
+    mov eax, 100
+    call RandomRange
+    pop ecx
+    
+    cmp eax, 80
+    jl SpawnNearCorridor
+    
+SpawnAnywhere:
+    ; 20% chance: spawn anywhere on a road
     mov eax, 20
     call RandomRange
     mov bl, al
@@ -907,114 +1583,305 @@ FindLoop:
     mov eax, 20
     call RandomRange
     mov bh, al
+    jmp CheckPosition
     
-    ; Check if road
+SpawnNearCorridor:
+    ; Pick a corridor (0, 5, 10, or 15)
+    mov eax, 4
+    call RandomRange
+    mov edx, 5
+    mul dl
+    mov bl, al  ; X on corridor
+    
+    ; Add random offset -1 to +1
+    push ebx
+    mov eax, 3
+    call RandomRange
+    dec al  ; -1, 0, or +1
+    pop ebx
+    add bl, al
+    
+    ; Clamp to 0-19
+    cmp bl, 0
+    jl SpawnAnywhere
+    cmp bl, 19
+    jg SpawnAnywhere
+    
+    ; Do same for Y
+    mov eax, 4
+    call RandomRange
+    mov edx, 5
+    mul dl
+    mov bh, al
+    
+    push ebx
+    mov eax, 3
+    call RandomRange
+    dec al
+    pop ebx
+    add bh, al
+    
+    cmp bh, 0
+    jl SpawnAnywhere
+    cmp bh, 19
+    jg SpawnAnywhere
+    
+CheckPosition:
+    ; Check 1: Not at player starting position (0,0)
+    cmp bl, 0
+    jne NotPlayerStart
+    cmp bh, 0
+    je TryAgain
+    
+NotPlayerStart:
+    ; Check 2: Not at current player position
+    cmp bl, playerX
+    jne NotCurrentPos
+    cmp bh, playerY
+    je TryAgain
+    
+NotCurrentPos:
+    ; Check 3: Must be a road tile
     push ecx
+    push ebx
     mov al, bh
     xor ah, ah
-    mov cl, 20
-    mul cl
+    mov dl, 20
+    mul dl
     xor ch, ch
     mov cl, bl
     add ax, cx
     
-    mov esi, OFFSET board
+    mov esi, offset board
     add esi, eax
     cmp BYTE PTR [esi], 1
+    pop ebx
     pop ecx
-    je FoundRoad
+    jne TryAgain
     
+    ; Check 4: Not too close to edges (avoid isolated corners)
+    cmp bl, 1
+    jl TryAgain
+    cmp bl, 18
+    jg TryAgain
+    cmp bh, 1
+    jl TryAgain
+    cmp bh, 18
+    jg TryAgain
+    
+    ; Position is valid!
+    jmp FoundRoad
+    
+TryAgain:
     dec ecx
     jmp FindLoop
     
 UseFallback:
-    ; Use position (1,1) as fallback
-    mov bl, 1
-    mov bh, 1
+    ; Use a guaranteed safe position on a corridor
+    mov bl, 5
+    mov bh, 5
     
 FoundRoad:
     mov al, bl
     mov ah, bh
     
     pop esi
+    pop edx
     pop ecx
     pop ebx
     ret
-FindRoadPosition ENDP
-
+road_position_find  ENDP
 
 ; ============================================================================
-; GAME LOOP (FULLY FUNCTIONAL)
+; CHECK IF POSITION IS REACHABLE FROM (0,0) 
 ; ============================================================================
+IsReachable PROC
+    ; Input: AL = X, AH = Y
+    ; Output: AL = 1 if reachable, 0 if not
+    ; Uses a simple check: position must be within 10 tiles of a road corridor
+    push ebx
+    push ecx
+    
+    mov bl, al  ; X
+    mov bh, ah  ; Y
+    
+    ; Check if on or near a guaranteed road corridor (every 5th row/col)
+    ; Check X coordinate
+    xor ah, ah
+    mov al, bl
+    mov cl, 5
+    div cl
+    cmp ah, 0
+    je NearCorridor
+    cmp ah, 1
+    je NearCorridor
+    cmp ah, 4
+    je NearCorridor
+    
+    ; Check Y coordinate
+    mov al, bh
+    xor ah, ah
+    mov cl, 5
+    div cl
+    cmp ah, 0
+    je NearCorridor
+    cmp ah, 1
+    je NearCorridor
+    cmp ah, 4
+    je NearCorridor
+    
+    ; Not near a corridor, might be isolated
+    mov al, 0
+    jmp ReachDone
+    
+NearCorridor:
+    ; Near a corridor, should be reachable
+    mov al, 1
+    
+ReachDone:
+    pop ecx
+    pop ebx
+    ret
+IsReachable ENDP
+
+
+
+
+
+
+;=============================================================================
+; GAME LOOP - FIXED VERSION
+;=============================================================================
 GameLoop PROC
     push eax
     push ebx
     push ecx
     push edx
     
+    ; Reset frame counter at start
+    mov framecount, 0
+    
 MainGameLoop:
-    call Clrscr
+    ; *** Update timer BEFORE drawing ***
+    mov al, timerActive
+    cmp al, 0
+    je SkipTimerUpdate
+    
+    ; Decrement timer every 20 frames (1 second at ~20 FPS)
+    mov eax, framecount
+    and eax, 19  ; Check if framecount % 20 == 0
+    cmp eax, 0
+    jne SkipTimerUpdate
+    
+    ; Decrement timer
+    mov eax, timerSeconds
+    cmp eax, 0
+    jle TimeExpired
+    dec timerSeconds
+    
+SkipTimerUpdate:
+    ; Draw the screen (once per main loop)
+    ;call Clrscr
     call DrawGame
     call DrawHUD
     
 GameInputLoop:
-    ; Small delay
+    ; Small delay for smoother gameplay
     mov eax, 50
     call Delay
     
-    ; Update cars every few frames
-    inc frameCount
-    mov eax, frameCount
-    mov ebx, carSpeed
+    ; Increment frame counter
+    inc framecount
+    
+    ; Update cars based on npc_speed
+    mov eax, framecount
     xor edx, edx
+    mov ebx, npc_speed
     div ebx
     cmp edx, 0
     jne SkipCarUpdate
     call UpdateCars
     
 SkipCarUpdate:
-    ; Read input
-    call ReadChar
-    mov inputChar, al
+    ; Check for key press (NON-BLOCKING)
+    mov eax, 1  ; 1ms timeout
+    call Delay
+    
+    call ReadKey
+    jz CheckRedraw  ; No key pressed, check if we need to redraw
+    
+    mov inputchar, al
     
     ; Check for exit
-    cmp inputChar, 'x'
+    cmp inputchar, 'x'
     je ExitGame
-    cmp inputChar, 'X'
+    cmp inputchar, 'X'
     je ExitGame
     
     ; Check for movement keys
-    cmp inputChar, 'w'
+    cmp inputchar, 'w'
     je MoveUp
-    cmp inputChar, 'W'
+    cmp inputchar, 'W'
     je MoveUp
     
-    cmp inputChar, 's'
+    cmp inputchar, 's'
     je MoveDown
-    cmp inputChar, 'S'
+    cmp inputchar, 'S'
     je MoveDown
     
-    cmp inputChar, 'a'
+    cmp inputchar, 'a'
     je MoveLeft
-    cmp inputChar, 'A'
+    cmp inputchar, 'A'
     je MoveLeft
     
-    cmp inputChar, 'd'
+    cmp inputchar, 'd'
     je MoveRight
-    cmp inputChar, 'D'
+    cmp inputchar, 'D'
     je MoveRight
     
-    cmp inputChar, ' '
+    cmp inputchar, ' '
     je HandleSpace
     
-    cmp inputChar, 'p'
+    cmp inputchar, 'p'
     je PauseGame
-    cmp inputChar, 'P'
+    cmp inputchar, 'P'
     je PauseGame
+
+    cmp inputchar, 'l'
+    je SaveGameNow
+    cmp inputchar, 'L'
+    je SaveGameNow
     
-    ; Invalid key, just wait for next input
+CheckRedraw:
+    ; Check if we need to redraw (every 3-5 frames or on car update)
+    mov eax, framecount
+    and eax, 3  ; Redraw every 4 frames
+    cmp eax, 0
+    je MainGameLoop  ; Redraw
+    
+    ; Otherwise continue input loop
     jmp GameInputLoop
+
+TimeExpired:
+    ; Time's up!
+    call Clrscr
+    mov eax, red + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET timeUp
+    call WriteString
+    call Crlf
+    call Crlf
     
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET final_score
+    call WriteString
+    mov eax, playerscore
+    call WriteInt
+    call Crlf
+    call WaitMsg
+    jmp ExitGame
+
 MoveUp:
     call TryMoveUp
     jmp CheckGameOver
@@ -1034,37 +1901,63 @@ MoveRight:
 HandleSpace:
     call HandlePickupDrop
     jmp CheckGameOver
-    
+
 PauseGame:
-    ; Wait for another key press
+    call DrawPauseOverlay
+    
+PauseWait:
     call ReadChar
+    
+    cmp al, 'p'
+    je ResumeGame
+    cmp al, 'P'
+    je ResumeGame
+    
+    cmp al, 'x'
+    je ExitGame
+    cmp al, 'X'
+    je ExitGame
+    
+    jmp PauseWait
+    
+ResumeGame:
+    jmp MainGameLoop
+
+SaveGameNow:
+    call SaveGame
     jmp MainGameLoop
     
 CheckGameOver:
-    ; Check fuel
-    mov eax, playerFuel
+    ; Only check fuel for Career and Time modes
+    mov al, currentMode
+    cmp al, 2  ; Endless mode
+    je SkipFuelCheck
+    
+    ; Check fuel for Career and Time modes
+    mov eax, fuel_amt
     cmp eax, 0
     jle GameOverFuel
     
+SkipFuelCheck:
     ; Check score
-    mov eax, playerScore
+    mov eax, playerscore
     cmp eax, 0
     jl GameOverNegative
     
-    ; Continue game - redraw
+    ; Continue game - redraw immediately after move
     jmp MainGameLoop
     
 GameOverFuel:
     call Clrscr
     mov eax, red + (black * 16)
     call SetTextColor
-    mov edx, OFFSET gameOver1
+    mov edx, offset gameover1
     call WriteString
     call Crlf
     call Crlf
     mov eax, white + (black * 16)
     call SetTextColor
-    mov edx, OFFSET gameOver2
+    mov edx, offset gameover2
     call WriteString
     call Crlf
     jmp ShowFinal
@@ -1073,24 +1966,24 @@ GameOverNegative:
     call Clrscr
     mov eax, red + (black * 16)
     call SetTextColor
-    mov edx, OFFSET gameOver1
+    mov edx, offset gameover1
     call WriteString
     call Crlf
     call Crlf
     mov eax, white + (black * 16)
     call SetTextColor
-    mov edx, OFFSET gameOver3
+    mov edx, offset gameover3
     call WriteString
     call Crlf
     
 ShowFinal:
-    mov edx, OFFSET finalScoreMsg
+    mov edx, offset final_score
     call WriteString
-    mov eax, playerScore
+    mov eax, playerscore
     call WriteInt
     call Crlf
     call Crlf
-    mov edx, OFFSET thankMsg
+    mov edx, offset end_game
     call WriteString
     call Crlf
     call WaitMsg
@@ -1104,35 +1997,29 @@ ExitGame:
     ret
 GameLoop ENDP
 
-
-; ============================================================================
-; TRY MOVE UP (FIXED RED TAXI SPEED)
-; ============================================================================
+;=============================================================================
+; TRY MOVE UP - FIXED (NO FUEL IN ENDLESS MODE)
+;=============================================================================
 TryMoveUp PROC
     push eax
     push ebx
     
-    ; Increment move counter first
-    inc moveCounter
+    inc move_speed_counter
     
-    ; Check if red taxi needs to wait (speed control)
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
-    je AllowMoveUp  ; Yellow taxi always moves
+    je AllowMoveUp
     
-    ; Red taxi: only move on even moveCounter values
-    mov eax, moveCounter
+    mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
-    je MoveFailUp  ; Odd number = skip this move
+    je MoveFailUp
     
 AllowMoveUp:
-    ; Check boundary
     mov al, playerY
     cmp al, 0
     je MoveFailUp
     
-    ; Check if destination is a road
     dec al
     mov bh, al
     mov bl, playerX
@@ -1142,7 +2029,16 @@ AllowMoveUp:
     
     ; Move is valid
     dec playerY
-    dec playerFuel
+    
+    ; *** FIX #3: Only consume fuel if NOT endless mode ***
+    push eax
+    mov al, currentMode
+    cmp al, 2  ; Endless mode = 2
+    je SkipFuelUp
+    dec fuel_amt
+SkipFuelUp:
+    pop eax
+    
     call CheckCollisions
     
 MoveFailUp:
@@ -1151,20 +2047,20 @@ MoveFailUp:
     ret
 TryMoveUp ENDP
 
-; ============================================================================
-; TRY MOVE DOWN (FIXED RED TAXI SPEED)
-; ============================================================================
+;=============================================================================
+; TRY MOVE DOWN - FIXED (NO FUEL IN ENDLESS MODE)
+;=============================================================================
 TryMoveDown PROC
     push eax
     push ebx
     
-    inc moveCounter
+    inc move_speed_counter
     
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je AllowMoveDown
     
-    mov eax, moveCounter
+    mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
     je MoveFailDown
@@ -1182,7 +2078,16 @@ AllowMoveDown:
     je MoveFailDown
     
     inc playerY
-    dec playerFuel
+    
+    ; *** FIX #3: Only consume fuel if NOT endless mode ***
+    push eax
+    mov al, currentMode
+    cmp al, 2
+    je SkipFuelDown
+    dec fuel_amt
+SkipFuelDown:
+    pop eax
+    
     call CheckCollisions
     
 MoveFailDown:
@@ -1191,20 +2096,20 @@ MoveFailDown:
     ret
 TryMoveDown ENDP
 
-; ============================================================================
-; TRY MOVE LEFT (FIXED RED TAXI SPEED)
-; ============================================================================
+;=============================================================================
+; TRY MOVE LEFT - FIXED (NO FUEL IN ENDLESS MODE)
+;=============================================================================
 TryMoveLeft PROC
     push eax
     push ebx
     
-    inc moveCounter
+    inc move_speed_counter
     
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je AllowMoveLeft
     
-    mov eax, moveCounter
+    mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
     je MoveFailLeft
@@ -1222,7 +2127,16 @@ AllowMoveLeft:
     je MoveFailLeft
     
     dec playerX
-    dec playerFuel
+    
+    ; *** FIX #3: Only consume fuel if NOT endless mode ***
+    push eax
+    mov al, currentMode
+    cmp al, 2
+    je SkipFuelLeft
+    dec fuel_amt
+SkipFuelLeft:
+    pop eax
+    
     call CheckCollisions
     
 MoveFailLeft:
@@ -1231,20 +2145,20 @@ MoveFailLeft:
     ret
 TryMoveLeft ENDP
 
-; ============================================================================
-; TRY MOVE RIGHT (FIXED RED TAXI SPEED)
-; ============================================================================
+;=============================================================================
+; TRY MOVE RIGHT - FIXED (NO FUEL IN ENDLESS MODE)
+;=============================================================================
 TryMoveRight PROC
     push eax
     push ebx
     
-    inc moveCounter
+    inc move_speed_counter
     
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je AllowMoveRight
     
-    mov eax, moveCounter
+    mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
     je MoveFailRight
@@ -1262,7 +2176,16 @@ AllowMoveRight:
     je MoveFailRight
     
     inc playerX
-    dec playerFuel
+    
+    ; *** FIX #3: Only consume fuel if NOT endless mode ***
+    push eax
+    mov al, currentMode
+    cmp al, 2
+    je SkipFuelRight
+    dec fuel_amt
+SkipFuelRight:
+    pop eax
+    
     call CheckCollisions
     
 MoveFailRight:
@@ -1270,6 +2193,8 @@ MoveFailRight:
     pop eax
     ret
 TryMoveRight ENDP
+
+
 
 
 
@@ -1285,7 +2210,7 @@ xor ch, ch
 mov cl, bl
 add ax, cx
 
-mov esi, OFFSET board
+mov esi, offset board
 add esi, eax
 mov al, [esi]
 
@@ -1298,10 +2223,7 @@ IsRoad ENDP
 
 
 ; ============================================================================
-; CHECK COLLISIONS (OBSTACLES, CARS, PASSENGERS, BONUS)
-; ============================================================================
-; ============================================================================
-; CHECK COLLISIONS (FIXED - NO PENALTY FOR VALID PICKUPS)
+; CHECK COLLISIONS 
 ; ============================================================================
 CheckCollisions PROC
     push eax
@@ -1310,7 +2232,7 @@ CheckCollisions PROC
     push esi
     
     ; Check obstacles
-    mov ecx, obstacleCount
+    mov ecx, obstaclecount
     xor esi, esi
     
 CheckObstLoop:
@@ -1319,30 +2241,30 @@ CheckObstLoop:
     
     push ecx
     
-    mov edi, OFFSET obstX
+    mov edi, offset obstX
     add edi, esi
     mov al, [edi]
     cmp al, playerX
     jne NextObst
     
-    mov edi, OFFSET obstY
+    mov edi, offset obstY
     add edi, esi
     mov al, [edi]
     cmp al, playerY
     jne NextObst
     
     ; Collision with obstacle!
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je YellowObst
     
     ; Red taxi: -2 points
-    sub playerScore, 2
+    sub playerscore, 2
     jmp NextObst
     
 YellowObst:
     ; Yellow taxi: -4 points
-    sub playerScore, 4
+    sub playerscore, 4
     
 NextObst:
     inc esi
@@ -1351,7 +2273,7 @@ NextObst:
     
 CheckCars:
     ; Check car collisions
-    mov ecx, carCount
+    mov ecx, npc_count
     xor esi, esi
     
 CheckCarLoop:
@@ -1360,35 +2282,35 @@ CheckCarLoop:
     
     push ecx
     
-    mov edi, OFFSET carActive
+    mov edi, offset npc_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je NextCar
     
-    mov edi, OFFSET carX
+    mov edi, offset carX
     add edi, esi
     mov al, [edi]
     cmp al, playerX
     jne NextCar
     
-    mov edi, OFFSET carY
+    mov edi, offset carY
     add edi, esi
     mov al, [edi]
     cmp al, playerY
     jne NextCar
     
     ; Collision with car!
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je YellowCar
     
     ; Red taxi: -3 points
-    sub playerScore, 3
+    sub playerscore, 3
     jmp NextCar
     
 YellowCar:
     ; Yellow taxi: -2 points
-    sub playerScore, 2
+    sub playerscore, 2
     
 NextCar:
     inc esi
@@ -1397,7 +2319,7 @@ NextCar:
     
 CheckBonus:
     ; Check bonus item collection (NO PENALTY - JUST COLLECT)
-    mov ecx, bonusCount
+    mov ecx, bonuscount
     xor esi, esi
     
 CheckBonusLoop:
@@ -1406,28 +2328,28 @@ CheckBonusLoop:
     
     push ecx
     
-    mov edi, OFFSET bonusActive
+    mov edi, offset bonusonboard
     add edi, esi
     cmp BYTE PTR [edi], 0
     je NextBonus
     
-    mov edi, OFFSET bonusX
+    mov edi, offset bonusX
     add edi, esi
     mov al, [edi]
     cmp al, playerX
     jne NextBonus
     
-    mov edi, OFFSET bonusY
+    mov edi, offset bonusY
     add edi, esi
     mov al, [edi]
     cmp al, playerY
     jne NextBonus
     
     ; Collected bonus! +10 points
-    add playerScore, 10
+    add playerscore, 10
     
     ; Deactivate this bonus
-    mov edi, OFFSET bonusActive
+    mov edi, offset bonusonboard
     add edi, esi
     mov BYTE PTR [edi], 0
     
@@ -1460,13 +2382,15 @@ HandlePickupDrop PROC
     push esi
     push edi
     
-    mov eax, targetPass
+    mov eax, carrying
     cmp eax, -1
     jne TryDrop
     
     ; Try pickup - check if passenger is adjacent (within 1 tile)
-    mov ecx, passengerCount
+    mov ecx, passengercount
     xor esi, esi
+
+
 PickupLoop:
     cmp esi, MAX_PASSENGERS
     jge PickupDone
@@ -1474,22 +2398,22 @@ PickupLoop:
     push ecx
     
     ; Check if passenger is active and not picked
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je NextPickup
     
-    mov edi, OFFSET passPicked
+    mov edi, offset pass_picked
     add edi, esi
     cmp BYTE PTR [edi], 1
     je NextPickup
     
     ; Get passenger position
-    mov edi, OFFSET passX
+    mov edi, offset passX
     add edi, esi
     mov bl, [edi]
     
-    mov edi, OFFSET passY
+    mov edi, offset passY
     add edi, esi
     mov bh, [edi]
     
@@ -1519,11 +2443,13 @@ YPositive:
     
     ; Pickup passenger!
     mov eax, esi
-    mov targetPass, eax
+    mov carrying, eax
     
-    mov edi, OFFSET passPicked
+    mov edi, offset pass_picked
     add edi, esi
     mov BYTE PTR [edi], 1
+
+;    call SoundPickup
     
     pop ecx
     jmp PickupDone
@@ -1539,50 +2465,66 @@ TryDrop:
     ; Try drop - must be at exact destination
     mov esi, eax
     
-    mov edi, OFFSET passDestX
+    mov edi, offset passdestX
     add edi, esi
     mov al, [edi]
     cmp al, playerX
     jne PickupDone
     
-    mov edi, OFFSET passDestY
+    mov edi, offset passdestY
     add edi, esi
     mov al, [edi]
     cmp al, playerY
     jne PickupDone
     
     ; Successfully dropped passenger!
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     mov BYTE PTR [edi], 0
     
-    mov targetPass, -1
+    mov carrying, -1
     
-    ; +10 points ONLY on successful drop-off
-    add playerScore, 10
+  ; *** Update endless session high score ***
+    mov al, currentMode
+    cmp al, 2
+    jne NotEndlessSession
     
-    ; Increment jobs done
-    inc jobsDone
+    mov eax, playerscore
+    cmp eax, endless_session_high
+    jle NotEndlessSession
+    mov endless_session_high, eax
+    
+NotEndlessSession:
     
     ; Maintain passengers (keep 3-5 active)
     call MaintainPassengers
+
+
+    mov al, currentMode
+    cmp al, 2
+    jne NoEndlessScale
+    call EndlessDifficultyIncrease
+    
+NoEndlessScale:
+    ; Every 2 jobs: increase speed
+    mov eax, total_dropsoffs
     
     ; Every 2 jobs: increase speed
-    mov eax, jobsDone
+    mov eax, total_dropsoffs
     mov ebx, 2
     xor edx, edx
     div ebx
     cmp edx, 0
     jne NoSpeedIncrease
     
-    ; Decrease carSpeed (faster cars)
-    mov eax, carSpeed
+    ; Decrease npc_speed (faster cars)
+    mov eax, npc_speed
     cmp eax, 1
     jle NoSpeedIncrease
-    dec carSpeed
+    dec npc_speed
     
     ; Also try to spawn new car
-    mov eax, carCount
+    mov eax, npc_count
     cmp eax, MAX_CARS
     jge NoSpeedIncrease
     call SpawnNewCar
@@ -1597,6 +2539,8 @@ PickupDone:
     pop eax
     ret
 HandlePickupDrop ENDP
+
+
 
 
 ; ============================================================================
@@ -1646,7 +2590,7 @@ DrawCols:
     add ax, cx
     
     ; Access board[index]
-    mov esi, OFFSET board
+    mov esi, offset board
     xor edx, edx
     mov dx, ax
     add esi, edx
@@ -1689,7 +2633,7 @@ NextRow:
     
 DrawEntities:
     ; Draw obstacles
-    mov ecx, obstacleCount
+    mov ecx, obstaclecount
     xor esi, esi
     
 DrawObst:
@@ -1714,7 +2658,7 @@ DrawObst:
     
     call Gotoxy
     
-    mov edi, OFFSET obstType
+    mov edi, OFFSET obsttype
     add edi, esi
     mov al, [edi]
     
@@ -1731,16 +2675,16 @@ DrawObst:
     mov al, 'R'
     call WriteChar
     jmp NextObst
-    
-DrawBox:
-    ; Box
-    mov eax, brown + (white * 16)
+
+    DrawBox:
+    ; Brown box - small box design
+    mov eax, yellow + (brown * 16)
     call SetTextColor
+    mov al, '['
+    call WriteChar
     mov al, 'B'
     call WriteChar
-    mov al, 'O'
-    call WriteChar
-    mov al, 'X'
+    mov al, ']'
     call WriteChar
     
 NextObst:
@@ -1750,7 +2694,7 @@ NextObst:
     
 DrawCars:
     ; Draw NPC cars
-    mov ecx, carCount
+    mov ecx, npc_count
     xor esi, esi
     
 DrawCarLoop:
@@ -1759,7 +2703,7 @@ DrawCarLoop:
     
     push ecx
     
-    mov edi, OFFSET carActive
+    mov edi, OFFSET npc_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipCar
@@ -1797,7 +2741,7 @@ SkipCar:
     
 DrawBonus:
     ; Draw bonus items
-    mov ecx, bonusCount
+    mov ecx, bonuscount
     xor esi, esi
     
 DrawBonusLoop:
@@ -1806,7 +2750,7 @@ DrawBonusLoop:
     
     push ecx
     
-    mov edi, OFFSET bonusActive
+    mov edi, OFFSET bonusonboard
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipBonus
@@ -1827,19 +2771,74 @@ DrawBonusLoop:
     
     call Gotoxy
     
-    ; Yellow dollar sign
+    ; Random bonus types - use esi as seed
+    push eax
+    mov eax, esi
+    mov ebx, 4
+    xor edx, edx
+    div ebx
+    pop eax
+    
+    cmp edx, 0
+    je DrawDollar
+    cmp edx, 1
+    je DrawStar
+    cmp edx, 2
+    je DrawGem
+    
+DrawCoin:
+    ; Gold coin
     mov eax, yellow + (white * 16)
     call SetTextColor
+    mov al, '('
+    call WriteChar
+    mov al, 'o'
+    call WriteChar
+    mov al, ')'
+    call WriteChar
+    jmp SkipBonus
+    
+DrawDollar:
+    ; Dollar sign
+    mov eax, lightGreen + (white * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
     mov al, '$'
     call WriteChar
     mov al, ' '
     call WriteChar
+    jmp SkipBonus
+    
+DrawStar:
+    ; Star
+    mov eax, yellow + (white * 16)
+    call SetTextColor
+    mov al, ' '
+    call WriteChar
+    mov al, '*'
+    call WriteChar
+    mov al, ' '
+    call WriteChar
+    jmp SkipBonus
+    
+DrawGem:
+    ; Diamond/Gem
+    mov eax, lightCyan + (white * 16)
+    call SetTextColor
+    mov al, '<'
+    call WriteChar
+    mov al, '>'
+    call WriteChar
+    mov al, ' '
     call WriteChar
     
 SkipBonus:
     inc esi
     pop ecx
     jmp DrawBonusLoop
+
+
 DrawPass:
     ; Draw passengers
     mov ecx, MAX_PASSENGERS
@@ -1851,12 +2850,12 @@ DrawPassLoop:
     
     push ecx
     
-    mov edi, OFFSET passActive
+    mov edi, OFFSET pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipPass
     
-    mov edi, OFFSET passPicked
+    mov edi, OFFSET pass_picked
     add edi, esi
     cmp BYTE PTR [edi], 1
     je SkipPass
@@ -1878,13 +2877,14 @@ DrawPassLoop:
     call Gotoxy
     
     ; Stick figure
-    mov eax, black + (white * 16)
+    ; Person waving
+    mov eax, BLACK + (white * 16)
     call SetTextColor
-    mov al, 'O'
+    mov al, '\'
     call WriteChar
-    mov al, '|'
+    mov al, 'o'
     call WriteChar
-    mov al, ' '
+    mov al, '/'
     call WriteChar
     
 SkipPass:
@@ -1895,14 +2895,14 @@ SkipPass:
 
     
 DrawDest:
-    ; Draw destination (green)
-    mov eax, targetPass
+    ; Draw destination (GREEN BACKGROUND)
+    mov eax, carrying
     cmp eax, -1
     je DrawPlayer
     
     mov esi, eax
     
-    mov edi, OFFSET passDestX
+    mov edi, OFFSET passdestX
     add edi, esi
     xor eax, eax
     mov al, [edi]
@@ -1911,16 +2911,18 @@ DrawDest:
     add al, 2
     mov dl, al
     
-    mov edi, OFFSET passDestY
+    mov edi, OFFSET passdestY
     add edi, esi
     mov dh, [edi]
     add dh, 2
     
     call Gotoxy
     
-    ; Green destination
-    mov eax, lightGreen + (white * 16)
+    ; Green destination with green background
+    mov eax, white + (green * 16)
     call SetTextColor
+    mov al, '*'
+    call WriteChar
     mov al, 'D'
     call WriteChar
     mov al, 'S'
@@ -1941,7 +2943,7 @@ DrawPlayer:
     add dh, 2
     call Gotoxy
     
-    mov al, taxiColor
+    mov al, taxicolor
     cmp al, 0
     je DrawYellowTaxi
     
@@ -1979,10 +2981,7 @@ TaxiDone:
 DrawGame ENDP
 
 
-; ============================================================================
-; DRAW HUD
-; ============================================================================
-DrawHUD PROC
+ DrawHUD PROC
     push eax
     push ebx
     push ecx
@@ -1992,17 +2991,37 @@ DrawHUD PROC
     mov dl, 0
     call Gotoxy
     
-    mov edx, OFFSET strScore
+    ; Display Score
+    mov eax, white + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET score_display
     call WriteString
-    mov eax, playerScore
+    mov eax, playerscore
     call WriteInt
     
-    mov edx, OFFSET strFuel
-    call WriteString
-    mov eax, playerFuel
-    call WriteDec
+    ; *** ONLY show fuel if NOT Endless mode ***
+    mov al, currentMode
+    cmp al, 2  ; Endless mode = 2
+    je SkipFuelDisplay
     
-    mov edx, OFFSET strPass
+    ; Display fuel for Career and Time modes
+    mov edx, offset fuel_display
+    call WriteString
+    mov eax, fuel_amt
+    call WriteDec
+    jmp ContinueHUD
+    
+SkipFuelDisplay:
+    ; Add spacing to align properly
+    mov al, ' '
+    mov ecx, 15
+SpacingLoop:
+    call WriteChar
+    loop SpacingLoop
+    
+ContinueHUD:
+    
+    mov edx, offset pass_display
     call WriteString
     
     ; Count active passengers
@@ -2017,12 +3036,12 @@ CountLoop:
     push ecx
     mov esi, ecx
     
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipCount
     
-    mov edi, OFFSET passPicked
+    mov edi, offset pass_picked
     add edi, esi
     cmp BYTE PTR [edi], 1
     je SkipCount
@@ -2037,26 +3056,100 @@ SkipCount:
 CountDone:
     call WriteDec
     
-    mov edx, OFFSET strJobs
+    mov edx, offset donedropped_display
     call WriteString
-    mov eax, jobsDone
+    mov eax, total_dropsoffs
     call WriteDec
     
+
+    mov edx, offset donedropped_display
+    call WriteString
+    mov eax, total_dropsoffs
+    call WriteDec
+    
+    ; *** NEW: Show current game mode ***
+    mov edx, OFFSET mode_display
+    call WriteString
+    
+    mov al, currentMode
+    cmp al, 0
+    je ShowCareerHUD
+    cmp al, 1
+    je ShowTimeHUD
+    
+    ; Endless Mode
+    mov eax, lightGreen + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET mode_endless_txt
+    call WriteString
+    mov eax, white + (black * 16)
+    call SetTextColor
+    jmp AfterModeHUD
+    
+ShowCareerHUD:
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET mode_career_txt
+    call WriteString
+    mov eax, white + (black * 16)
+    call SetTextColor
+    jmp AfterModeHUD
+    
+ShowTimeHUD:
+    mov eax, cyan + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET mode_time_txt
+    call WriteString
+    mov eax, white + (black * 16)
+    call SetTextColor
+    
+AfterModeHUD:
+    ; *** Show session high if Endless mode ***
+    mov al, currentMode
+    cmp al, 2
+    jne NotEndlessHUD
+    
+    mov edx, OFFSET endless_high_msg
+    call WriteString
+    mov eax, endless_session_high
+    call WriteDec
+    
+NotEndlessHUD:
+    ; Show timer if Time Mode
+    mov al, currentMode
+    cmp al, 1
+    jne SkipTimer
+    
+    ; Display timer
+    mov edx, OFFSET timeRemaining
+    call WriteString
+    mov eax, timerSeconds
+    call WriteDec
+    mov al, 's'
+    call WriteChar
+    
+SkipTimer:
+    ; Continue with rest of HUD
+    mov dh, 1
+    mov dl, 0
+    call Gotoxy
+
+
     ; Line 1
     mov dh, 1
     mov dl, 0
     call Gotoxy
     
-    mov eax, targetPass
+    mov eax, carrying
     cmp eax, -1
     je ShowLegend
     
-    mov edx, OFFSET carryMsg
+    mov edx, offset carrying_display
     call WriteString
     jmp HUDDone
     
 ShowLegend:
-    mov edx, OFFSET legendMsg
+    mov edx, OFFSET items_on_board
     call WriteString
     
 HUDDone:
@@ -2084,7 +3177,7 @@ UpdateCars PROC
     push ecx
     push esi
     
-    mov ecx, carCount
+    mov ecx, npc_count
     xor esi, esi
     
 UpdateLoop:
@@ -2093,7 +3186,7 @@ UpdateLoop:
     
     push ecx
     
-    mov edi, OFFSET carActive
+    mov edi, OFFSET npc_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipUpdate
@@ -2103,7 +3196,7 @@ UpdateLoop:
     add edi, esi
     mov bl, [edi]
     
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov al, [edi]
     add bl, al
@@ -2115,7 +3208,7 @@ UpdateLoop:
     
     ; Check road
     push esi
-    mov edi, OFFSET carY
+    mov edi, offset carY
     add edi, esi
     mov bh, [edi]
     call IsRoad
@@ -2124,16 +3217,16 @@ UpdateLoop:
     je Reverse
     
     ; Update X
-    mov edi, OFFSET carX
+    mov edi, offset carX
     add edi, esi
     mov [edi], bl
     
     ; Get Y
-    mov edi, OFFSET carY
+    mov edi, offset carY
     add edi, esi
     mov bl, [edi]
     
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov al, [edi]
     add bl, al
@@ -2162,13 +3255,13 @@ UpdateLoop:
     jmp SkipUpdate
     
 Reverse:
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov al, [edi]
     neg al
     mov [edi], al
     
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov al, [edi]
     neg al
@@ -2208,12 +3301,12 @@ CountActive:
     push ecx
     mov esi, ecx
     
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     je SkipActive
     
-    mov edi, OFFSET passPicked
+    mov edi, offset pass_picked
     add edi, esi
     cmp BYTE PTR [edi], 1
     je SkipActive
@@ -2239,7 +3332,7 @@ FindSlot:
     jge NoSpawn
     
     push esi
-    mov edi, OFFSET passActive
+    mov edi, offset pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     pop esi
@@ -2251,7 +3344,7 @@ FindSlot:
 FoundSlot:
     ; Spawn new passenger at this slot
     push eax
-    call FindRoadPosition
+    call road_position_find 
     mov edi, OFFSET passX
     add edi, esi
     mov [edi], al
@@ -2260,20 +3353,20 @@ FoundSlot:
     add edi, esi
     mov [edi], ah
     
-    call FindRoadPosition
-    mov edi, OFFSET passDestX
+    call road_position_find 
+    mov edi, OFFSET passdestX
     add edi, esi
     mov [edi], al
     
-    mov edi, OFFSET passDestY
+    mov edi, OFFSET passdestY
     add edi, esi
     mov [edi], ah
     
-    mov edi, OFFSET passPicked
+    mov edi, OFFSET pass_picked
     add edi, esi
     mov BYTE PTR [edi], 0
     
-    mov edi, OFFSET passActive
+    mov edi, OFFSET pass_active
     add edi, esi
     mov BYTE PTR [edi], 1
     
@@ -2301,7 +3394,7 @@ FindSlot2:
     jge NoSpawn
     
     push esi
-    mov edi, OFFSET passActive
+    mov edi, OFFSET pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
     pop esi
@@ -2313,7 +3406,7 @@ FindSlot2:
 FoundSlot2:
     ; Spawn new passenger
     push eax
-    call FindRoadPosition
+    call road_position_find 
     mov edi, OFFSET passX
     add edi, esi
     mov [edi], al
@@ -2322,20 +3415,20 @@ FoundSlot2:
     add edi, esi
     mov [edi], ah
     
-    call FindRoadPosition
-    mov edi, OFFSET passDestX
+    call road_position_find 
+    mov edi, OFFSET passdestX
     add edi, esi
     mov [edi], al
     
-    mov edi, OFFSET passDestY
+    mov edi, OFFSET passdestY
     add edi, esi
     mov [edi], ah
     
-    mov edi, OFFSET passPicked
+    mov edi, OFFSET pass_picked
     add edi, esi
     mov BYTE PTR [edi], 0
     
-    mov edi, OFFSET passActive
+    mov edi, OFFSET pass_active
     add edi, esi
     mov BYTE PTR [edi], 1
     
@@ -2354,85 +3447,17 @@ MaintainPassengers ENDP
 
 
 ; ============================================================================
-; MAINTAIN BONUS ITEMS (KEEP 3-5 ACTIVE)
-; ============================================================================
-MaintainBonusItems PROC
-    push eax
-    push ebx
-    push ecx
-    push esi
-    
-    ; Count active bonus items
-    xor eax, eax
-    xor ecx, ecx
-    
-CountBonus:
-    mov ebx, bonusCount
-    cmp ecx, ebx
-    jge CheckBonusSpawn
-    
-    push ecx
-    mov esi, ecx
-    
-    mov edi, OFFSET bonusActive
-    add edi, esi
-    cmp BYTE PTR [edi], 0
-    je SkipBonusCount
-    
-    inc eax
-    
-SkipBonusCount:
-    pop ecx
-    inc ecx
-    jmp CountBonus
-    
-CheckBonusSpawn:
-    ; If less than 3 active, spawn new
-    cmp eax, 3
-    jge NoBonusSpawn
-    
-    mov eax, bonusCount
-    cmp eax, MAX_BONUS
-    jge NoBonusSpawn
-    
-    ; Spawn new bonus item
-    mov esi, eax
-    
-    call FindRoadPosition
-    mov edi, OFFSET bonusX
-    add edi, esi
-    mov [edi], al
-    
-    mov edi, OFFSET bonusY
-    add edi, esi
-    mov [edi], ah
-    
-    mov edi, OFFSET bonusActive
-    add edi, esi
-    mov BYTE PTR [edi], 1
-    
-    inc bonusCount
-    
-NoBonusSpawn:
-    pop esi
-    pop ecx
-    pop ebx
-    pop eax
-    ret
-MaintainBonusItems ENDP
-
-; ============================================================================
 ; SPAWN NEW CAR
 ; ============================================================================
 SpawnNewCar PROC
     push eax
     push esi
     
-    mov esi, carCount
+    mov esi, npc_count
     cmp esi, MAX_CARS
     jge NoSpawn2
     
-    call FindRoadPosition
+    call road_position_find 
     
     mov edi, OFFSET carX
     add edi, esi
@@ -2454,52 +3479,355 @@ SpawnNewCar PROC
     je NewLeft
     
 NewRight:
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 1
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 0
     jmp NewDone
     
 NewUp:
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 0
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov BYTE PTR [edi], -1
     jmp NewDone
     
 NewDown:
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov BYTE PTR [edi], 0
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 1
     jmp NewDone
     
 NewLeft:
-    mov edi, OFFSET carDirX
+    mov edi, OFFSET npc_dirX
     add edi, esi
     mov BYTE PTR [edi], -1
-    mov edi, OFFSET carDirY
+    mov edi, OFFSET npc_dirY
     add edi, esi
     mov BYTE PTR [edi], 0
     
 NewDone:
-    mov edi, OFFSET carActive
+    mov edi, OFFSET npc_active
     add edi, esi
     mov BYTE PTR [edi], 1
     
-    inc carCount
+    inc npc_count
     
 NoSpawn2:
     pop esi
     pop eax
     ret
 SpawnNewCar ENDP
+
+
+;============================================================================
+; SELECT GAME MODE
+;============================================================================
+SelectGameMode PROC
+    push eax
+    push edx
+    
+    call Clrscr
+    
+    mov dh, 8
+    mov dl, 30
+    call Gotoxy
+    mov eax, cyan + (black * 16)
+    call SetTextColor
+    
+    mov edx, OFFSET modeTitle
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov eax, white + (black * 16)
+    call SetTextColor
+    
+    mov dh, 11
+    mov dl, 20
+    call Gotoxy
+    mov edx, OFFSET mode1
+    call WriteString
+    call Crlf
+    
+    mov dh, 13
+    mov dl, 20
+    call Gotoxy
+    mov edx, OFFSET mode2
+    call WriteString
+    call Crlf
+    
+    mov dh, 15
+    mov dl, 20
+    call Gotoxy
+    mov edx, OFFSET mode3
+    call WriteString
+    call Crlf
+    call Crlf
+    
+    mov dh, 18
+    mov dl, 30
+    call Gotoxy
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET mode4
+    call WriteString
+    
+GetModeInput:
+    call ReadChar
+    
+    cmp al, '1'
+    je SetCareer
+    cmp al, '2'
+    je SetTime
+    cmp al, '3'
+    je SetEndless
+    
+    jmp GetModeInput
+    
+SetCareer:
+    mov currentMode, 0
+    mov timerActive, 0
+    jmp ModeDone
+    
+SetTime:
+    mov currentMode, 1
+    mov timerSeconds, 120  ; *** 120 seconds as per spec ***
+    mov timerActive, 1
+    jmp ModeDone
+    
+SetEndless:
+    mov currentMode, 2
+    mov timerActive, 0
+    ; *** Set high fuel for endless (won't be consumed anyway) ***
+    mov fuel_amt, 9999
+    
+ModeDone:
+    mov dh, 20
+    mov dl, 35
+    call Gotoxy
+    mov eax, lightGreen + (black * 16)
+    call SetTextColor
+    
+    mov al, currentMode
+    cmp al, 0
+    je ShowCareer
+    cmp al, 1
+    je ShowTime
+    
+    mov al, 'E'
+    call WriteChar
+    mov al, 'n'
+    call WriteChar
+    mov al, 'd'
+    call WriteChar
+    mov al, 'l'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    mov al, 's'
+    call WriteChar
+    jmp WaitMode
+    
+ShowCareer:
+    mov al, 'C'
+    call WriteChar
+    mov al, 'a'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    mov al, 'r'
+    call WriteChar
+    jmp WaitMode
+    
+ShowTime:
+    mov al, 'T'
+    call WriteChar
+    mov al, 'i'
+    call WriteChar
+    mov al, 'm'
+    call WriteChar
+    mov al, 'e'
+    call WriteChar
+    
+WaitMode:
+    mov eax, 800
+    call Delay
+    call clrscr
+    
+    pop edx
+    pop eax
+    ret
+
+SelectGameMode ENDP
+
+;============================================================================
+; ENDLESS MODE DIFFICULTY INCREASE
+;============================================================================
+EndlessDifficultyIncrease PROC
+    push eax
+    push ebx
+    push esi
+    
+    ; Every 3 deliveries, increase difficulty
+    mov eax, total_dropsoffs
+    mov ebx, 3
+    xor edx, edx
+    div ebx
+    cmp edx, 0
+    jne NoEndlessIncrease
+    
+    ; Increase car speed
+    mov eax, npc_speed
+    cmp eax, 1
+    jle CheckObstacles
+    dec npc_speed
+    
+CheckObstacles:
+    ; Add more obstacles (up to max)
+    mov eax, obstaclecount
+    cmp eax, MAX_OBSTACLES
+    jge TryAddCar
+    inc obstaclecount
+    
+    ; Spawn the new obstacle
+    push esi
+    mov esi, obstaclecount
+    dec esi
+    
+    call road_position_find
+    mov edi, OFFSET obstX
+    add edi, esi
+    mov [edi], al
+    
+    mov edi, OFFSET obstY
+    add edi, esi
+    mov [edi], ah
+    
+    mov eax, 2
+    call RandomRange
+    mov edi, OFFSET obsttype
+    add edi, esi
+    mov [edi], al
+    
+    pop esi
+
+TryAddCar:
+    ; Try to add more cars
+    mov eax, npc_count
+    cmp eax, MAX_CARS
+    jge NoEndlessIncrease
+    call SpawnNewCar
+    
+NoEndlessIncrease:
+    pop esi
+    pop ebx
+    pop eax
+    ret
+EndlessDifficultyIncrease ENDP
+
+;============================================================================
+; DRAW PAUSE OVERLAY
+;============================================================================
+DrawPauseOverlay PROC
+    push eax
+    push ecx
+    push edx
+    
+    ; Draw semi-transparent grey overlay (simulate with grey text)
+    mov dh, 8
+    mov dl, 0
+    mov ecx, 10  ; 10 rows of grey
+    
+DrawGreyRows:
+    push ecx
+    push edx
+    
+    call Gotoxy
+    mov eax, lightGray + (lightGray * 16)
+    call SetTextColor
+    
+    mov ecx, 80
+DrawGreyCols:
+    mov al, ' '
+    call WriteChar
+    loop DrawGreyCols
+    
+    pop edx
+    pop ecx
+    inc dh
+    loop DrawGreyRows
+    
+    ; Draw pause box
+    mov dh, 10
+    mov dl, 28
+    call Gotoxy
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    
+    mov al, '='
+    mov ecx, 24
+DrawTopBorder:
+    call WriteChar
+    loop DrawTopBorder
+    
+    ; Title
+    mov dh, 11
+    mov dl, 28
+    call Gotoxy
+    mov eax, white + (red * 16)
+    call SetTextColor
+    mov edx, OFFSET pauseTitle
+    call WriteString
+    
+    ; Bottom border
+    mov dh, 12
+    mov dl, 28
+    call Gotoxy
+    mov eax, yellow + (black * 16)
+    call SetTextColor
+    
+    mov al, '='
+    mov ecx, 24
+DrawBottomBorder:
+    call WriteChar
+    loop DrawBottomBorder
+    
+    ; Instructions
+    mov dh, 14
+    mov dl, 30
+    call Gotoxy
+    mov eax, lightGreen + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET pauseMsg1
+    call WriteString
+    
+    mov dh, 15
+    mov dl, 28
+    call Gotoxy
+    mov eax, lightGreen + (black * 16)
+    call SetTextColor
+    mov edx, OFFSET pauseMsg2
+    call WriteString
+    
+    pop edx
+    pop ecx
+    pop eax
+    ret
+DrawPauseOverlay ENDP
 
 
 ; ============================================================================
@@ -2511,10 +3839,10 @@ SaveGame PROC
     push edx
     
     ; Create save file
-    mov edx, OFFSET saveFilename
+    mov edx, OFFSET savegamefilenametxt
     call CreateOutputFile
     jc SaveFailed
-    mov fileHandle, eax
+    mov filehandle, eax
     
     ; Write player position (2 bytes)
     mov edx, OFFSET playerX
@@ -2522,37 +3850,37 @@ SaveGame PROC
     call WriteToFile
     
     ; Write player score (4 bytes)
-    mov edx, OFFSET playerScore
+    mov edx, OFFSET playerscore
     mov ecx, 4
     call WriteToFile
     
     ; Write player fuel (4 bytes)
-    mov edx, OFFSET playerFuel
+    mov edx, OFFSET fuel_amt
     mov ecx, 4
     call WriteToFile
     
     ; Write taxi color (1 byte)
-    mov edx, OFFSET taxiColor
+    mov edx, OFFSET taxicolor
     mov ecx, 1
     call WriteToFile
     
     ; Write target passenger (4 bytes)
-    mov edx, OFFSET targetPass
+    mov edx, OFFSET carrying
     mov ecx, 4
     call WriteToFile
     
     ; Write jobs done (4 bytes)
-    mov edx, OFFSET jobsDone
+    mov edx, OFFSET total_dropsoffs
     mov ecx, 4
     call WriteToFile
     
     ; Write passenger count (4 bytes)
-    mov edx, OFFSET passengerCount
+    mov edx, OFFSET passengercount
     mov ecx, 4
     call WriteToFile
     
     ; Write car speed (4 bytes)
-    mov edx, OFFSET carSpeed
+    mov edx, OFFSET npc_speed
     mov ecx, 4
     call WriteToFile
     
@@ -2562,7 +3890,7 @@ SaveGame PROC
     call WriteToFile
     
     ; Write player name (30 bytes)
-    mov edx, OFFSET playerName
+    mov edx, OFFSET play_name
     mov ecx, 30
     call WriteToFile
     
@@ -2578,73 +3906,98 @@ SaveGame PROC
     mov edx, OFFSET passY
     mov ecx, 5
     call WriteToFile
-    mov edx, OFFSET passDestX
+    mov edx, OFFSET passdestX
     mov ecx, 5
     call WriteToFile
-    mov edx, OFFSET passDestY
+    mov edx, OFFSET passdestY
     mov ecx, 5
     call WriteToFile
-    mov edx, OFFSET passPicked
+    mov edx, OFFSET pass_picked
     mov ecx, 5
     call WriteToFile
-    mov edx, OFFSET passActive
+    mov edx, OFFSET pass_active
     mov ecx, 5
     call WriteToFile
     
     ; Write obstacle data
-    mov edx, OFFSET obstacleCount
+    mov eax, filehandle
+    mov edx, OFFSET obstaclecount
     mov ecx, 4
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET obstX
     mov ecx, 10
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET obstY
     mov ecx, 10
     call WriteToFile
-    mov edx, OFFSET obstType
+    
+    mov eax, filehandle
+    mov edx, OFFSET obsttype
     mov ecx, 10
     call WriteToFile
     
     ; Write car data
-    mov edx, OFFSET carCount
+    mov eax, filehandle
+    mov edx, OFFSET npc_count
     mov ecx, 4
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET carX
     mov ecx, 8
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET carY
     mov ecx, 8
     call WriteToFile
-    mov edx, OFFSET carDirX
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_dirX
     mov ecx, 8
     call WriteToFile
-    mov edx, OFFSET carDirY
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_dirY
     mov ecx, 8
     call WriteToFile
-    mov edx, OFFSET carActive
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_active
     mov ecx, 8
     call WriteToFile
     
     ; Write bonus data
-    mov edx, OFFSET bonusCount
+    mov eax, filehandle
+    mov edx, OFFSET bonuscount
     mov ecx, 4
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET bonusX
     mov ecx, 5
     call WriteToFile
+    
+    mov eax, filehandle
     mov edx, OFFSET bonusY
     mov ecx, 5
     call WriteToFile
-    mov edx, OFFSET bonusActive
+    
+    mov eax, filehandle
+    mov edx, OFFSET bonusonboard
     mov ecx, 5
     call WriteToFile
     
     ; Close file
-    mov eax, fileHandle
+    mov eax, filehandle
     call CloseFile
     
     call Clrscr
-    mov edx, OFFSET saveMsg1
+    mov edx, OFFSET gamesaveprompt
     call WriteString
     call Crlf
     call WaitMsg
@@ -2669,10 +4022,10 @@ LoadGame PROC
     push edx
     
     ; Open save file
-    mov edx, OFFSET saveFilename
+    mov edx, OFFSET savegamefilenametxt
     call OpenInputFile
     jc LoadFailed
-    mov fileHandle, eax
+    mov filehandle, eax
     
     ; Read player position
     mov edx, OFFSET playerX
@@ -2680,37 +4033,37 @@ LoadGame PROC
     call ReadFromFile
     
     ; Read player score
-    mov edx, OFFSET playerScore
+    mov edx, OFFSET playerscore
     mov ecx, 4
     call ReadFromFile
     
     ; Read player fuel
-    mov edx, OFFSET playerFuel
+    mov edx, OFFSET fuel_amt
     mov ecx, 4
     call ReadFromFile
     
     ; Read taxi color
-    mov edx, OFFSET taxiColor
+    mov edx, OFFSET taxicolor
     mov ecx, 1
     call ReadFromFile
     
     ; Read target passenger
-    mov edx, OFFSET targetPass
+    mov edx, OFFSET carrying
     mov ecx, 4
     call ReadFromFile
     
     ; Read jobs done
-    mov edx, OFFSET jobsDone
+    mov edx, OFFSET total_dropsoffs
     mov ecx, 4
     call ReadFromFile
     
     ; Read passenger count
-    mov edx, OFFSET passengerCount
+    mov edx, OFFSET passengercount
     mov ecx, 4
     call ReadFromFile
     
     ; Read car speed
-    mov edx, OFFSET carSpeed
+    mov edx, OFFSET npc_speed
     mov ecx, 4
     call ReadFromFile
     
@@ -2720,7 +4073,7 @@ LoadGame PROC
     call ReadFromFile
     
     ; Read player name
-    mov edx, OFFSET playerName
+    mov edx, OFFSET play_name
     mov ecx, 30
     call ReadFromFile
     
@@ -2736,77 +4089,97 @@ LoadGame PROC
     mov edx, OFFSET passY
     mov ecx, 5
     call ReadFromFile
-    mov edx, OFFSET passDestX
+    mov edx, OFFSET passdestX
     mov ecx, 5
     call ReadFromFile
-    mov edx, OFFSET passDestY
+    mov edx, OFFSET passdestY
     mov ecx, 5
     call ReadFromFile
-    mov edx, OFFSET passPicked
+    mov edx, OFFSET pass_picked
     mov ecx, 5
     call ReadFromFile
-    mov edx, OFFSET passActive
+    mov edx, OFFSET pass_active
     mov ecx, 5
     call ReadFromFile
     
-    ; Read obstacle data
-    mov edx, OFFSET obstacleCount
+   ; Read obstacle data
+    mov eax, filehandle
+    mov edx, OFFSET obstaclecount
     mov ecx, 4
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET obstX
     mov ecx, 10
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET obstY
     mov ecx, 10
     call ReadFromFile
-    mov edx, OFFSET obstType
+    
+    mov eax, filehandle
+    mov edx, OFFSET obsttype
     mov ecx, 10
     call ReadFromFile
     
     ; Read car data
-    mov edx, OFFSET carCount
+    mov eax, filehandle
+    mov edx, OFFSET npc_count
     mov ecx, 4
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET carX
     mov ecx, 8
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET carY
     mov ecx, 8
     call ReadFromFile
-    mov edx, OFFSET carDirX
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_dirX
     mov ecx, 8
     call ReadFromFile
-    mov edx, OFFSET carDirY
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_dirY
     mov ecx, 8
     call ReadFromFile
-    mov edx, OFFSET carActive
+    
+    mov eax, filehandle
+    mov edx, OFFSET npc_active
     mov ecx, 8
     call ReadFromFile
     
     ; Read bonus data
-    mov edx, OFFSET bonusCount
+    mov eax, filehandle
+    mov edx, OFFSET bonuscount
     mov ecx, 4
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET bonusX
     mov ecx, 5
     call ReadFromFile
+    
+    mov eax, filehandle
     mov edx, OFFSET bonusY
     mov ecx, 5
     call ReadFromFile
-    mov edx, OFFSET bonusActive
+    
+    mov eax, filehandle
+    mov edx, OFFSET bonusonboard
     mov ecx, 5
     call ReadFromFile
-    
-    ; Close file
-    mov eax, fileHandle
-    call CloseFile
-    
     ; Reset frame counter and move counter
-    mov frameCount, 0
-    mov moveCounter, 0
+    mov framecount, 0
+    mov move_speed_counter, 0
     
-    call Clrscr
-    mov edx, OFFSET loadMsg1
+    call clrscr
+    mov edx, OFFSET gameloadprompt
     call WriteString
     call Crlf
     call WaitMsg
@@ -2815,8 +4188,8 @@ LoadGame PROC
     jmp LoadDone
     
 LoadFailed:
-    call Clrscr
-    mov edx, OFFSET loadMsg2
+     call clrscr
+    mov edx, OFFSET gameloadprompt1
     call WriteString
     call Crlf
     call WaitMsg
@@ -2830,6 +4203,76 @@ LoadDone:
 LoadGame ENDP
 
 
+
+; ============================================================================
+; MAINTAIN BONUS ITEMS (KEEP 3-5 ACTIVE)
+; ============================================================================
+MaintainBonusItems PROC
+    push eax
+    push ebx
+    push ecx
+    push esi
+    
+    ; Count active bonus items
+    xor eax, eax
+    xor ecx, ecx
+    
+CountBonus:
+    mov ebx, bonuscount
+    cmp ecx, ebx
+    jge CheckBonusSpawn
+    
+    push ecx
+    mov esi, ecx
+    
+    mov edi, OFFSET bonusonboard
+    add edi, esi
+    cmp BYTE PTR [edi], 0
+    je Skipbonuscount
+    
+    inc eax
+    
+Skipbonuscount:
+    pop ecx
+    inc ecx
+    jmp CountBonus
+    
+CheckBonusSpawn:
+    ; If less than 3 active, spawn new
+    cmp eax, 3
+    jge NoBonusSpawn
+    
+    mov eax, bonuscount
+    cmp eax, MAX_BONUS
+    jge NoBonusSpawn
+    
+    ; Spawn new bonus item
+    mov esi, eax
+    
+    call road_position_find 
+    mov edi, OFFSET bonusX
+    add edi, esi
+    mov [edi], al
+    
+    mov edi, OFFSET bonusY
+    add edi, esi
+    mov [edi], ah
+    
+    mov edi, OFFSET bonusonboard
+    add edi, esi
+    mov BYTE PTR [edi], 1
+    
+    inc bonuscount
+    
+NoBonusSpawn:
+    pop esi
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+MaintainBonusItems ENDP
+
+
 ; ============================================================================
 ; LOAD HIGH SCORES
 ; ============================================================================
@@ -2840,10 +4283,10 @@ LoadHighScores PROC
     push esi
     
     ; Try to open file
-    mov edx, OFFSET hsFilename
+    mov edx, OFFSET filenametxt
     call OpenInputFile
     jc NoFile
-    mov fileHandle, eax
+    mov filehandle, eax
     
     ; Read 10 scores (4 bytes each = 40 bytes)
     mov edx, OFFSET highScores
@@ -2856,7 +4299,7 @@ LoadHighScores PROC
     call ReadFromFile
     
     ; Close file
-    mov eax, fileHandle
+    mov eax, filehandle
     call CloseFile
     jmp LoadHSDone
     
@@ -2892,135 +4335,145 @@ UpdateHighScores PROC
     push esi
     push edi
     
-    ; Check if score qualifies (must be > 0 and > lowest score)
-    mov eax, playerScore
+    ; Check if score qualifies (must be > 0)
+    mov eax, playerscore
     cmp eax, 0
     jle NoUpdate
     
-    mov esi, OFFSET highScores
-    add esi, 36  ; Last score (index 9 * 4)
-    mov ebx, [esi]
-    cmp eax, ebx
-    jle NoUpdate
-    
-    ; Find insertion position
+    ; Find insertion position (check all 10 slots)
     mov ecx, 10
     mov esi, OFFSET highScores
+    xor ebx, ebx  ; Position counter
     
 FindPos:
     cmp ecx, 0
     je InsertAtEnd
     
-    mov ebx, [esi]
-    cmp eax, ebx
+    mov edx, [esi]
+    
+    ; If slot is empty (0) or our score is better, insert here
+    cmp edx, 0
+    je FoundPos
+    
+    cmp eax, edx
     jg FoundPos
     
     add esi, 4
+    inc ebx
     dec ecx
     jmp FindPos
     
 FoundPos:
-    ; Shift scores down
-    push esi
-    push ecx
+    ; Check if we found a valid position (not beyond slot 9)
+    cmp ebx, 10
+    jge NoUpdate
+    
+    ; Shift scores down from position EBX
+    push eax
+    push ebx
     
     ; Calculate how many to shift
-    mov eax, ecx
-    dec eax  ; Shift count
+    mov eax, 9
+    sub eax, ebx  ; Number of slots to shift
     cmp eax, 0
-    jle NoShift
+    jle NoShiftScores
     
     mov ecx, eax
     
-    ; Start from bottom, shift down
+    ; Start from bottom (slot 9), shift down
     mov esi, OFFSET highScores
-    add esi, 36  ; Index 9
+    add esi, 36  ; Start at slot 9 (9 * 4)
     
 ShiftScoresDown:
-    mov ebx, [esi - 4]
-    mov [esi], ebx
-    sub esi, 4
-    dec ecx
-    cmp ecx, 0
-    jne ShiftScoresDown
-    
-NoShift:
-    ; Shift names down
-    pop ecx
     push ecx
+    mov edx, [esi - 4]
+    mov [esi], edx
+    sub esi, 4
+    pop ecx
+    loop ShiftScoresDown
     
-    mov eax, ecx
-    dec eax
+NoShiftScores:
+    pop ebx
+    pop eax
+    
+    ; Insert new score at position EBX
+    mov esi, OFFSET highScores
+    push eax
+    mov eax, ebx
+    mov edx, 4
+    mul edx
+    add esi, eax
+    pop eax
+    mov [esi], eax
+    
+    ; Now shift names
+    push eax
+    push ebx
+    
+    ; Calculate how many names to shift
+    mov eax, 9
+    sub eax, ebx
     cmp eax, 0
     jle NoShiftNames
     
     mov ecx, eax
     
+    ; Start from bottom name (slot 9)
     mov esi, OFFSET highNames
-    mov eax, 270  ; 9 * 30
-    add esi, eax
+    add esi, 270  ; Start at slot 9 (9 * 30)
     
-ShiftNamesDown:
+ShiftNamesLoop:
     push ecx
     push esi
     
-    ; Copy 30 bytes
-    mov ecx, 30
+    ; Copy 30 bytes from [esi-30] to [esi]
     mov edi, esi
     sub esi, 30
+    mov ecx, 30
     
-CopyName:
+CopyNameBytes:
     mov al, [esi]
     mov [edi], al
     inc esi
     inc edi
-    dec ecx
-    cmp ecx, 0
-    jne CopyName
+    loop CopyNameBytes
     
     pop esi
-    pop ecx
     sub esi, 30
-    dec ecx
-    cmp ecx, 0
-    jne ShiftNamesDown
+    pop ecx
+    loop ShiftNamesLoop
     
 NoShiftNames:
-    pop ecx
-    pop esi
+    pop ebx
+    pop eax
     
-    ; Insert new score
-    mov eax, playerScore
-    mov [esi], eax
-    
-    ; Calculate name position
-    mov eax, 10
-    sub eax, ecx
-    mov ebx, 30
-    mul ebx
+    ; Insert player name at position EBX
     mov esi, OFFSET highNames
+    push eax
+    mov eax, ebx
+    mov edx, 30
+    mul edx
     add esi, eax
+    pop eax
     
-    ; Copy player name
+    ; Copy player name (30 bytes)
     mov edi, esi
-    mov esi, OFFSET playerName
+    mov esi, OFFSET play_name
     mov ecx, 30
     
-CopyPlayerName:
+Copyplay_name:
     mov al, [esi]
     mov [edi], al
     inc esi
     inc edi
-    dec ecx
-    cmp ecx, 0
-    jne CopyPlayerName
+    loop Copyplay_name
     
     ; Save to file
     call SaveHighScores
     jmp NoUpdate
     
 InsertAtEnd:
-    ; Should not reach here if logic is correct
+    ; Score didn't qualify
     
 NoUpdate:
     pop edi
@@ -3031,36 +4484,44 @@ NoUpdate:
     pop eax
     ret
 UpdateHighScores ENDP
-
+ 
 ; ============================================================================
-; SAVE HIGH SCORES
+; SAVE HIGH SCORES 
 ; ============================================================================
 SaveHighScores PROC
     push eax
     push ecx
     push edx
     
-    ; Create file
-    mov edx, OFFSET hsFilename
+    ; Create file (overwrites if exists)
+    mov edx, OFFSET filenametxt
     call CreateOutputFile
     jc SaveHSFailed
-    mov fileHandle, eax
+    mov filehandle, eax
     
-    ; Write 10 scores
+    ; Write 10 scores (40 bytes)
+    mov eax, filehandle
     mov edx, OFFSET highScores
     mov ecx, 40
     call WriteToFile
+    jc CloseAndFail
     
-    ; Write 10 names
+    ; Write 10 names (300 bytes)
+    mov eax, filehandle
     mov edx, OFFSET highNames
     mov ecx, 300
     call WriteToFile
     
+CloseAndFail:
     ; Close file
-    mov eax, fileHandle
+    mov eax, filehandle
     call CloseFile
+    jmp SaveHSDone
     
 SaveHSFailed:
+    ; File creation failed - could be permissions issue
+    
+SaveHSDone:
     pop edx
     pop ecx
     pop eax
@@ -3202,117 +4663,8 @@ ShowLBDone:
 ShowLeaderboard ENDP
 
 
-; ============================================================================
-; SHOW INSTRUCTIONS
-; ============================================================================
-ShowInstructions PROC
-    push eax
-    push edx
-    
-    call Clrscr
-    
-    mov eax, lightCyan + (black * 16)
-    call SetTextColor
-    
-    mov edx, OFFSET inst1
-    call WriteString
-    call Crlf
-    mov eax, white + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst2
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst3
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst4
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst5
-    call WriteString
-    call Crlf
-    call Crlf
-    
-    mov eax, lightCyan + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst6
-    call WriteString
-    call Crlf
-    mov eax, white + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst7
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst8
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst9
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst10
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst11
-    call WriteString
-    call Crlf
-    call Crlf
-    
-    mov eax, yellow + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst12
-    call WriteString
-    call Crlf
-    mov eax, white + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst13
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst14
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst15
-    call WriteString
-    call Crlf
-    call Crlf
-    
-    mov eax, red + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst16
-    call WriteString
-    call Crlf
-    mov eax, white + (black * 16)
-    call SetTextColor
-    mov edx, OFFSET inst17
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst18
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst19
-    call WriteString
-    call Crlf
-    call Crlf
-    
-    mov edx, OFFSET inst20
-    call WriteString
-    call Crlf
-    mov edx, OFFSET inst21
-    call WriteString
-    call Crlf
-    call Crlf
-    
-    mov edx, OFFSET inst22
-    call WriteString
-    call ReadChar
-    
-    pop edx
-    pop eax
-    ret
-ShowInstructions ENDP
 
-; ============================================================================
-; CHANGE DIFFICULTY
-; ============================================================================
+;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ChangeDifficulty PROC
     push eax
     push edx
@@ -3344,25 +4696,28 @@ ChangeDifficulty PROC
     call ReadChar
     
     cmp al, '1'
-    je SetDiff0
+    je difficulty_0
     cmp al, '2'
-    je SetDiff1
+    je difficulty_1
     cmp al, '3'
-    je SetDiff2
+    je difficulty_2
     
     ; Default to medium
     mov difficulty, 1
     jmp DiffDone
     
-SetDiff0:
+
+
+
+difficulty_0:
     mov difficulty, 0
     jmp DiffDone
     
-SetDiff1:
+difficulty_1:
     mov difficulty, 1
     jmp DiffDone
     
-SetDiff2:
+difficulty_2:
     mov difficulty, 2
     
 DiffDone:
@@ -3376,4 +4731,6 @@ ChangeDifficulty ENDP
 END main
 
 
-
+
+
+
