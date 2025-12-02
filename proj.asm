@@ -1,4 +1,8 @@
 ﻿INCLUDE Irvine32.inc
+includelib winmm.lib
+
+
+PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
 
 .data
 
@@ -194,6 +198,18 @@
     pauseMsg1       BYTE "Press P to Resume", 0
     pauseMsg2       BYTE "Press X to Exit to Menu", 0
 
+PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
+start db "start.wav", 0
+carCrash db "C:\sounds\crash.wav",0
+pickup   db "C:\sounds\pickup.wav",0
+SND_SYNC        equ 0h
+SND_ASYNC       equ 1h
+SND_NODEFAULT   equ 2h
+SND_MEMORY      equ 4h
+SND_LOOP        equ 8h
+SND_NOSTOP      equ 10h
+SND_NOWAIT      equ 2000h
+SND_FILENAME    equ 20000h
 
 
 
@@ -1944,6 +1960,7 @@ fuel_finito:
     mov edx, offset gameover1
     call WriteString
     call Crlf
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
 
     call Crlf
     mov eax, white + (black * 16)
@@ -1952,7 +1969,7 @@ fuel_finito:
     call WriteString
     call Crlf
     jmp finalstats
-    
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
 
 score_negative:
     call Clrscr
@@ -1960,6 +1977,7 @@ score_negative:
     call settextcolor
     mov edx, offset gameover1
     call WriteString
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
 
     call Crlf
     call Crlf
@@ -1968,7 +1986,8 @@ score_negative:
     mov edx, offset gameover3
     call WriteString
     call Crlf
-    
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
+
 finalstats:
     mov edx, offset final_score
     call WriteString
@@ -1978,6 +1997,7 @@ finalstats:
     call Crlf
     mov edx, offset end_game
     call WriteString
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
 
     call Crlf
     call WaitMsg
@@ -2254,10 +2274,12 @@ check_obst:
     cmp al, 0
     je yellowttaxi_obs
     sub playerscore, 2 ;red T
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
     jmp next_obst
     
 yellowttaxi_obs:
     sub playerscore, 4
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
     
 next_obst:
     inc esi
@@ -2296,11 +2318,13 @@ check_carcollision:
     cmp al, 0
     je yellow_car
     sub playerscore, 3
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
     jmp next_car
     
     yellow_car:
         sub playerscore, 2
-    
+        invoke PlaySound,addr start, 0 ,SND_ASYNC
+
 next_car:
     inc esi
     pop ecx
@@ -2447,6 +2471,7 @@ dropoff_try:
     mov BYTE PTR [edi], 0
     add playerscore, 10    
     mov carrying, -1
+    invoke PlaySound,addr start, 0 ,SND_ASYNC
     
     mov al, currentMode
     cmp al, 2
@@ -2485,6 +2510,7 @@ NoSpeedIncrease:
     
 
 pickedup_complete:
+invoke PlaySound,addr start, 0 ,SND_ASYNC
     pop edi
     pop esi
     pop ecx
