@@ -201,20 +201,20 @@ includelib winmm.lib
         PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
         start db "start.wav", 0
         carCrash db "collision.wav",0
-        pickup   db "pickup.wav",0
+        pickup_sound   db "pickup.wav",0
         bonus_collect   db "bonus_collect.wav", 0
         gameover_sound   db "gameover.wav", 0
-        pause_sound  db "pickup.wav", 0
+        pause_sound  db "pause.wav", 0
 
-            SND_SYNC        equ 0h
-            SND_ASYNC       equ 1h
-            SND_NODEFAULT   equ 2h
-            SND_MEMORY      equ 4h
-            SND_LOOP        equ 8h
-            SND_NOSTOP      equ 10h
-            SND_NOWAIT      equ 2000h
-            SND_ALIAS       equ 10000h
-            SND_FILENAME    equ 20000h
+       SND_SYNC        equ 0h
+       SND_ASYNC       equ 1h
+       SND_NODEFAULT   equ 2h
+       SND_MEMORY      equ 4h
+       SND_LOOP        equ 8h
+       SND_NOSTOP      equ 10h
+       SND_NOWAIT      equ 2000h
+       SND_ALIAS       equ 10000h
+       SND_FILENAME    equ 20000h
             
 
 
@@ -226,6 +226,10 @@ includelib winmm.lib
 
 
 .code
+
+; main: yahan se program start hota hai, menu dikhata hai,
+;user se option leta hai (new game, continue, difficulty, leaderboard, instructions, exit) 
+;aur phir wohi functions call karta hai. Pure game ka main control yahin hai.
 
 main PROC
     call Randomize
@@ -360,6 +364,9 @@ END_ALL:
 main ENDP
 
 ;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+; DISPLAY: start wala main menu screen draw karta hai (title taxi, options 1?6)
+;phir user ki choice character read karke menuinput variable me save karta hai
 
 DISPLAY PROC
    
@@ -632,6 +639,10 @@ ShowInstructions PROC
     ret
 ShowInstructions ENDP
 ;--------------------------------------------------------------------------------------------------------------------------------------------------------------
+; Playerinfo_get: pehle thoda sa fancy frame / text draw karta hai, phir player ka naam read karta hai aur usko play_name me store karta hai.
+;Uske baad player ko taxi color choose karwata hai (yellow, red, ya random)
+;aur taxicolor variable set karta hai.
+
 Playerinfo_get PROC
 
     push eax
@@ -1073,6 +1084,9 @@ Playerinfo_get ENDP
 
     
 ; --------------------------------------------------------------------------------------------------------------------------------------------------------------
+; initialize_newgame: naya game shuru karne se pehle sari cheezen reset karta hai (player position 0,0; score, dropoffs, carrying, framecount, move_speed_counter). 
+;Difficulty apply karta hai,
+;board generate karta hai, passengers, obstacles, NPC cars aur bonus items random jagahon pe spawn karta hai
 
 initialize_newgame  PROC
 
@@ -1595,151 +1609,167 @@ board_generate_hogaya_pls:
 
 generateBoard ENDP
 ;---------------------------------------------------------------------------------------------------------------------------------------------------
+ ;road_position_find: yeh function kisi random road cell ka (x,y) nikalta hai jo board par valid ho.
+ ;Start position, player ki current position, aur occupied positions avoid karta hai
+ ;isliye spawning ke liye safe road tile return karta hai
+
 road_position_find PROC
     push ebx
     push ecx
     push edx
     push esi
+    
+    mov ecx, 500 ;try 500 times
+    
+find_loop:
 
-    mov ecx, 500; try 500 times
+    cmp ecx, 0
+    je use_fallback
+   
+    push ecx
+    mov eax, 100
+    call RandomRange
+    pop ecx
+    cmp eax, 80
+    jl spawnnewcorr
 
-    find_loop :
-        cmp ecx, 0
-        je use_fallback
-        push ecx
-        mov eax, 100
-        call RandomRange
-        pop ecx
-        cmp eax, 80
-        jl spawnnewcorr
 
-    spawnanywhere :
-        mov eax, 20
-        call RandomRange
-        mov bl, al
-        mov eax, 20
-        call RandomRange
-        mov bh, al
+    
+spawnanywhere:
+    mov eax, 20
+    call RandomRange
+    mov bl, al
+    mov eax, 20
+    call RandomRange
+    mov bh, al
+    jmp pos_check
+    
+spawnnewcorr:
+    mov eax, 4
+    call RandomRange
 
-        jmp pos_check
+    mov edx, 5
+    mul dl
+    mov bl, al  
+    push ebx
+    mov eax, 3
+    call RandomRange
 
-    spawnnewcorr :
-        mov eax, 4
-        call RandomRange
-        mov edx, 5
-        mul dl
-        mov bl, al
-        push ebx
-        mov eax, 3
-        call RandomRange
-        dec al
-        pop ebx
-        add bl, al
-        cmp bl, 0
-        jl spawnanywhere
-        cmp bl, 19
-        jg spawnanywhere
-        mov eax, 4
-        call RandomRange
-        mov edx, 5
-        mul dl
+    dec al
+    pop ebx
+    add bl, al
+    cmp bl, 0
+    jl spawnanywhere
+    cmp bl, 19
+    jg spawnanywhere
+    mov eax, 4
+    call RandomRange
 
-        mov bh, al
-        push ebx
-        mov eax, 3
-        call RandomRange
-        dec al
-        pop ebx
-        add bh, al
-        cmp bh, 0
-        jl spawnanywhere
-        cmp bh, 19
-        jg spawnanywhere
+    mov edx, 5
+    mul dl
+    mov bh, al
+    push ebx
+    mov eax, 3
 
-    pos_check :
-        cmp bl, 0
-        jne playernot_atstart
-        cmp bh, 0
-        je retry
+    call RandomRange
+    dec al
+    pop ebx
+    add bh, al
 
-   playernot_atstart :
-         cmp bl, playerX
-        jne not_currpos
-        cmp bh, playerY
-        je retry
+    cmp bh, 0
+    jl spawnanywhere
+    cmp bh, 19
+    jg spawnanywhere
+    
+pos_check:
+    cmp bl, 0
+    jne playernot_atstart
+    cmp bh, 0
+    je retry
+    
+playernot_atstart:
+    cmp bl, playerX
+    jne not_currpos
+    cmp bh, playerY
+    je retry
 
-    not_currpos :
-         push ecx
-             push ebx
-             mov al, bh
-             xor ah, ah
-             mov dl, 20
-             mul dl
-             xor ch, ch
-             mov cl, bl
-             add ax, cx
-             mov esi, offset board
-             add esi, eax
-             cmp BYTE PTR[esi], 1
-             pop ebx
+not_currpos:
+    push ecx
+    push ebx
+    mov al, bh
+    xor ah, ah
+    mov dl, 20
+    mul dl
+    xor ch, ch
+    mov cl, bl
+    add ax, cx
+    mov esi, offset board
 
-             pop ecx
-             jne retry
-             cmp bl, 1
-             jl retry
-             cmp bl, 18
-             jg retry
-             cmp bh, 1
-             jl retry
-             cmp bh, 18
-             jg retry
+    add esi, eax
+    cmp BYTE PTR [esi], 1
+    pop ebx
+    pop ecx
+    jne retry
 
-             push ecx
-             call is_position_occupied
-             pop ecx
+    cmp bl, 1
+    jl retry
+    cmp bl, 18
+    jg retry
+    cmp bh, 1
+    jl retry
+    cmp bh, 18
+    jg retry
+    ;occupied?
 
-             cmp al, 1
-             je retry; pos oc try again
-             ;y+1
-            push ebx
-            inc bh;one row below
-            cmp bh, 19
-            jg skip_trunk_check
+    push ecx
+    call is_position_occupied
 
-            push ecx
-            call is_position_occupied
-            pop ecx
-            pop ebx
-            cmp al, 1
-            je retry;conflicttrunk pos
-            jmp road_found
+    pop ecx
+    cmp al, 1
+    je retry ;occupiedtry again
+    push ebx
+    inc bh;one row below
+    cmp bh, 19
+    jg skip_trunk_check    
+    push ecx
+    call is_position_occupied
+    pop ecx
+    pop ebx
+    cmp al, 1
+    je retry  ;trunt conflict
 
-        skip_trunk_check :
-             pop ebx
-            jmp road_found
+    jmp road_found
+    
+skip_trunk_check:
+    pop ebx
 
-        retry :
-           dec ecx
-         jmp find_loop
+    jmp road_found
+   
+retry:
+    dec ecx
+    jmp find_loop
+  
+use_fallback:
+    mov bl, 5
+    mov bh, 5
+    
+road_found:
+    mov al, bl
+    mov ah, bh
+    
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
 
-    use_fallback :
-        mov bl, 5
-        mov bh, 5
+    ret
 
-    road_found :
-        mov al, bl
-        mov ah, bh
 
-        pop esi
-        pop edx
-        pop ecx
-        pop ebx
-        ret
-        
- 
 road_position_find ENDP
 
 ;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=
+;simple check karta hai ke diya gaya (x,y) tile road corridor ke kareeb hai ya nahi. 
+;Basically dekh raha hota hai ke yeh position game mein realistically approachable hai ya bohat side mein fas gayi ha
 
 reachable PROC
     push ebx
@@ -1784,11 +1814,10 @@ reachabledone:
 
 
 reachable ENDP
-    ;input: AL = X, AH = Y
-    ;output: AL = 1 if reachable 0 if not
-    ;simple check position must be within 10 tiles of a road corridor
+    ;in al = x, ah = y output: al = 1 if reachable 0 if not and simple check position must be within 10 tiles of a road corridor
 
 ;-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+;Screen redraw, input handle WASD, space, P, L, X timer/update logic, NPC car movement, collisions ka flow sab yahin se control hota hai jab tak game over ya exit na ho jaye
 
 the_gameloop_main PROC
 
@@ -1957,6 +1986,7 @@ spacbar_func:
     invoke PlaySound, addr pause_sound, 0, SND_ASYNC + SND_FILENAME
     call Pause_display
     
+
 pause_screen_wait:
     call ReadChar
     
@@ -2060,6 +2090,20 @@ finito:
 the_gameloop_main ENDP
 
 ;-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+; Movement_try 
+; - Kaam: Player ko given direction me move karna, sirf agar next tile valid ho.
+; - Logic flow:
+; 1) Next cell nikaalna (current X,Y se +/– 1).
+; 2) Boundary check (bahar to nahi ja raha?
+; 3) Road check is_road = 1 hona chahiye; building par move nahi
+; 4) Obstacle check (has_obstacle = 0 chahiye; box/tree block kare to ruk)
+; 5) Option Occupied check (NPC/bonus/passenger overlap avoid)
+; 6) Commit move (playerX, playerY update)
+; 7) Fuel adjust (har successful move pe fuel --)
+; 8) Speed/colour effects (agar koi slow/fast rule hai)
+; 9) Post move collisions (NPC hit, bonus pickup, passenger overlap)
+; 10) Redraw baad me main loop karega (yahan sirf state update)
+
 ; ----------------------------------------
 moveup_try PROC
     push eax
@@ -2309,6 +2353,8 @@ moveright_try PROC
 
         moveright_try ENDP
  ; ----------------------------------------
+ ;given x = bl, y = bh ke liye board index nikalta hai aur board array se check karta hai ke yeh cell road (1) hai ya building (0)
+ ;Return AL me 1 ya 0 deta hai
 
 is_road PROC
     push ebx
@@ -2333,6 +2379,8 @@ is_road PROC
 
 is_road ENDP
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+;check karta hai ke koi bhi entity  is (x,y) position pe already hai ya nahi
+;Agar kuch mila to AL = 1 warna AL = 0 return karta hai
 
 is_position_occupied PROC
     push ebx
@@ -2359,7 +2407,7 @@ is_position_occupied PROC
             ;treetrunk y+1
             mov edi, OFFSET obsttype
             add edi, esi
-            cmp BYTE PTR[edi], 1; Is it a tree ?
+            cmp BYTE PTR[edi], 1; is it a tree ?
             jne next_obst_check
             mov edi, OFFSET obstY
             add edi, esi
@@ -2793,7 +2841,7 @@ dropoff_try:
         mov BYTE PTR[edi], 0
         add playerscore, 10
         mov carrying, -1
-        invoke PlaySound, addr pickup, 0, SND_ASYNC + SND_FILENAME
+        
     
     
     mov al, currentMode
@@ -2833,6 +2881,7 @@ NoSpeedIncrease:
     
 
 pickedup_complete:
+invoke PlaySound, addr pickup_sound, 0, SND_ASYNC + SND_FILENAME
     pop edi
     pop esi
     pop ecx
@@ -3533,258 +3582,247 @@ npc_car_move ENDP
 ;--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 PASSENGERS_RESPAWN PROC
-push eax
-push ebx
-push ecx
-push edx
-push esi
-xor eax, eax
-xor ecx, ecx
 
-ACTIVE_COUNT :
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push esi
+    xor eax, eax
+    xor ecx, ecx
+    
+ACTIVE_COUNT:
     cmp ecx, MAX_PASSENGERS
-        jge SPAWN_CHECK
-        push ecx
-        mov esi, ecx
-        mov edi, offset pass_active
-        add edi, esi
-        cmp BYTE PTR[edi], 0
-        je ACTIVE_SKIP
-        mov edi, offset pass_picked
-        add edi, esi
-        cmp BYTE PTR[edi], 1
-        je ACTIVE_SKIP
-
-        inc eax
-
-        ACTIVE_SKIP :
+    jge SPAWN_CHECK
+    push ecx
+    mov esi, ecx
+    mov edi, offset pass_active
+    add edi, esi
+    cmp BYTE PTR [edi], 0
+    je ACTIVE_SKIP
+    mov edi, offset pass_picked
+    add edi, esi
+    cmp BYTE PTR [edi], 1
+    je ACTIVE_SKIP
+    inc eax
+    
+ACTIVE_SKIP:
     pop ecx
-        inc ecx
-        jmp ACTIVE_COUNT
-
-        SPAWN_CHECK :
+    inc ecx
+    jmp ACTIVE_COUNT
+ 
+SPAWN_CHECK:
 spawnloop:
     cmp eax, 3
-        jge max_check
-        xor esi, esi
-
-        slot_find :
+    jge max_check
+    xor esi, esi
+    
+slot_find:
     cmp esi, MAX_PASSENGERS
-        jge NoSpawn
+    jge NoSpawn
+    push esi
+    mov edi, offset pass_active
+    add edi, esi
 
-        push esi
-        mov edi, offset pass_active
-        add edi, esi
-        cmp BYTE PTR[edi], 0
-        pop esi
-        je FoundSlot
-
-        inc esi
-        jmp slot_find
-
-        FoundSlot :
-    push eax
-        push esi
-        mov ecx, 100; Try up to 100 times
-
-        find_pass_pos :
-    cmp ecx, 0
-        je failed_pass_spawn
-
-        push ecx
-        call road_position_find
-        mov bl, al
-        mov bh, ah
-
-        ; Check if occupied
-        push eax
-        call is_position_occupied
-        pop eax
-
-        pop ecx
-        cmp al, 1
-        je retry_pass_pos
-
-        ; Store passenger position
-        pop esi
-        push esi
-        mov edi, OFFSET passX
-        add edi, esi
-        mov[edi], bl
-        mov edi, OFFSET passY
-        add edi, esi
-        mov[edi], bh
-
-        ; Now find destination
-        mov ecx, 100
-
-        find_dest_pos:
-    cmp ecx, 0
-        je failed_pass_spawn
-
-        push ecx
-        call road_position_find
-        mov bl, al
-        mov bh, ah
-
-        ; Check if occupied
-        push eax
-        call is_position_occupied
-        pop eax
-
-        pop ecx
-        cmp al, 1
-        je retry_dest_pos
-
-        ; Store destination
-        pop esi
-        push esi
-        mov edi, OFFSET passdestX
-        add edi, esi
-        mov[edi], bl
-        mov edi, OFFSET passdestY
-        add edi, esi
-        mov[edi], bh
-        mov edi, OFFSET pass_picked
-        add edi, esi
-        mov BYTE PTR[edi], 0
-        mov edi, OFFSET pass_active
-        add edi, esi
-        mov BYTE PTR[edi], 1
-
-        pop esi
-        pop eax
-        inc eax
-        jmp spawnloop
-
-        retry_dest_pos :
-    dec ecx
-        jmp find_dest_pos
-
-        retry_pass_pos :
-    dec ecx
-        jmp find_pass_pos
-
-        failed_pass_spawn :
+    cmp BYTE PTR [edi], 0
     pop esi
-        pop eax
-        jmp max_check
+    je FoundSlot
+    
+    inc esi
+    jmp slot_find
+    
+FoundSlot:
+    push eax
+    push esi
+    mov ecx, 100  ;try 100 times
+    
+find_pass_pos:
+    cmp ecx, 0
+    je failed_pass_spawn
+    push ecx
+    call road_position_find 
+    mov bl, al
+    mov bh, ah
+    ;occupied?
+    push eax
+    call is_position_occupied
+    pop eax
+    pop ecx
+    cmp al, 1
 
-        max_check :
+    je retry_pass_pos
+    ;passenger pos store
+    pop esi
+    push esi
+    mov edi, OFFSET passX
+    add edi, esi
+    mov [edi], bl
+    mov edi, OFFSET passY
+    add edi, esi
+    mov [edi], bh
+    mov ecx, 100;find destination
+    
+find_dest_pos:
+    cmp ecx, 0
+    je failed_pass_spawn
+    push ecx
+    call road_position_find
+    mov bl, al
+    mov bh, ah
+    push eax
+    call is_position_occupied
+    pop eax
+    pop ecx
+    cmp al, 1
+    je retry_dest_pos
+    pop esi
+    push esi
+    mov edi, OFFSET passdestX
+    add edi, esi
+    mov [edi], bl
+    mov edi, OFFSET passdestY
+    add edi, esi
+    mov [edi], bh
+    mov edi, OFFSET pass_picked
+    add edi, esi
+
+    mov BYTE PTR [edi], 0
+    mov edi, OFFSET pass_active
+
+    add edi, esi
+    mov BYTE PTR [edi], 1
+    pop esi
+    pop eax
+    inc eax
+    jmp spawnloop
+    
+retry_dest_pos:
+    dec ecx
+    jmp find_dest_pos
+    
+retry_pass_pos:
+    dec ecx
+    jmp find_pass_pos
+    
+failed_pass_spawn:
+    pop esi
+    pop eax
+    jmp max_check
+
+max_check:
     cmp eax, 5
-        jge NoSpawn
-        push eax
-        mov eax, 100
-        call RandomRange
-        cmp eax, 30
-        pop eax
-        jg NoSpawn
-
-        xor esi, esi
-
-        slot_find2 :
-    cmp esi, MAX_PASSENGERS
-        jge NoSpawn
-        push esi
-        mov edi, OFFSET pass_active
-        add edi, esi
-        cmp BYTE PTR[edi], 0
-        pop esi
-        je slot_found2
-
-        inc esi
-        jmp slot_find2
-
-        slot_found2 :
+    jge NoSpawn
     push eax
-        push esi
-        mov ecx, 100
+    mov eax, 100
+    call RandomRange
+    cmp eax, 30
+    pop eax
+    jg NoSpawn
+   
+    xor esi, esi
+    
+slot_find2:
+    cmp esi, MAX_PASSENGERS
+    jge NoSpawn
+    push esi
+    mov edi, OFFSET pass_active
 
-        find_pass_pos2 :
-        cmp ecx, 0
-        je failed_spawn2
-
-        push ecx
-        call road_position_find
-        mov bl, al
-        mov bh, ah
-
-        push eax
-        call is_position_occupied
-        pop eax
-
-        pop ecx
-        cmp al, 1
-        je retry_pos2
-
-        pop esi
-        push esi
-        mov edi, OFFSET passX
-        add edi, esi
-        mov[edi], bl
-        mov edi, OFFSET passY
-        add edi, esi
-        mov[edi], bh
-
-        mov ecx, 100
-
-        find_dest_pos2:
+    add edi, esi
+    cmp BYTE PTR [edi], 0
+    pop esi
+    je slot_found2
+    inc esi
+    jmp slot_find2
+    
+slot_found2:
+    push eax
+    push esi
+    mov ecx, 100
+    
+find_pass_pos2:
     cmp ecx, 0
-        je failed_spawn2
-
-        push ecx
-        call road_position_find
-        mov bl, al
-        mov bh, ah
-
-        push eax
-        call is_position_occupied
-        pop eax
-
-        pop ecx
-        cmp al, 1
-        je retry_dest2
-
-        pop esi
-        push esi
-        mov edi, OFFSET passdestX
-        add edi, esi
-        mov[edi], bl
-        mov edi, OFFSET passdestY
-        add edi, esi
-        mov[edi], bh
-        mov edi, OFFSET pass_picked
-        add edi, esi
-        mov BYTE PTR[edi], 0
-        mov edi, OFFSET pass_active
-        add edi, esi
-        mov BYTE PTR[edi], 1
-
-        pop esi
-        pop eax
-        inc eax
-        jmp max_check
-
-        retry_dest2 :
-    dec ecx
-        jmp find_dest_pos2
-
-        retry_pos2 :
-    dec ecx
-        jmp find_pass_pos2
-
-        failed_spawn2 :
+    je failed_spawn2
+    push ecx
+    call road_position_find
+    mov bl, al
+    mov bh, ah
+    push eax
+    call is_position_occupied
+    pop eax
+    pop ecx
+    cmp al, 1
+    je retry_pos2  
     pop esi
-        pop eax
+    push esi
+    mov edi, OFFSET passX
 
-        NoSpawn :
+    add edi, esi
+    mov [edi], bl
+    mov edi, OFFSET passY
+    add edi, esi
+    mov [edi], bh 
+    mov ecx, 100
+    
+find_dest_pos2:
+    cmp ecx, 0
+    je failed_spawn2
+    push ecx
+    call road_position_find
+    mov bl, al
+    mov bh, ah
+    push eax
+    call is_position_occupied
+    pop eax
+    pop ecx
+    cmp al, 1
+
+    je retry_dest2
     pop esi
+    push esi
+    mov edi, OFFSET passdestX
+    add edi, esi
+    mov [edi], bl
+    mov edi, OFFSET passdestY
+    add edi, esi
+    mov [edi], bh
+    mov edi, OFFSET pass_picked
+    add edi, esi
+    mov BYTE PTR [edi], 0
+    mov edi, OFFSET pass_active
+
+    add edi, esi
+    mov BYTE PTR [edi], 1
+    pop esi
+    pop eax
+    inc eax
+    jmp max_check
+    
+
+
+retry_dest2:
+    dec ecx
+    jmp find_dest_pos2
+    
+retry_pos2:
+    dec ecx
+    jmp find_pass_pos2
+    
+failed_spawn2:
+
+    pop esi
+    pop eax
+    
+    NoSpawn:
+        pop esi
         pop edx
         pop ecx
         pop ebx
         pop eax
         ret
-        PASSENGERS_RESPAWN ENDP
+
+
+
+PASSENGERS_RESPAWN ENDP
 
 ;-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
