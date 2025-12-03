@@ -2,7 +2,6 @@
 includelib winmm.lib
 
 
-PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
 
 .data
 
@@ -99,119 +98,127 @@ PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
 
     gamesaveprompt        BYTE "Game saved!", 0
     gameloadprompt        BYTE "Game loaded!", 0
-    gameloadprompt1        BYTE "No save file found!", 0
-    bonusX          BYTE 5 DUP(0)
-    bonusY          BYTE 5 DUP(0)
-    bonusonboard     BYTE 5 DUP(0)
-    bonuscount      DWORD 0
-    framecount      DWORD 0 ; ANIMATION
-    inputchar       BYTE ?
-    play_name      BYTE 30 DUP(?)
-    menuinput      BYTE 0
-    difficulty      BYTE 1
+        gameloadprompt1        BYTE "No save file found!", 0
+        bonusX          BYTE 5 DUP(0)
+        bonusY          BYTE 5 DUP(0)
+        bonusonboard     BYTE 5 DUP(0)
+        bonuscount      DWORD 0
+        framecount      DWORD 0; ANIMATION
+        inputchar       BYTE ?
+        play_name      BYTE 30 DUP(? )
+        menuinput      BYTE 0
+        difficulty      BYTE 1
 
 
-    currentMode     BYTE 0  
-    timerSeconds    DWORD 0  
-    timerActive     BYTE 0   
-    mode1           BYTE "1. Career Mode ;- Complete deliveries to progress while the fuel doesnt run out", 0
-    mode2           BYTE "2. Time Mode :- Score as much as possible in 120 seconds", 0
-    mode3           BYTE "3. Endless Mode :- Play forever while increasing difficulty PRESS x to exit", 0
+        currentMode     BYTE 0
+        timerSeconds    DWORD 0
+        timerActive     BYTE 0
+        mode1           BYTE "1. Career Mode ;- Complete deliveries to progress while the fuel doesnt run out", 0
+        mode2           BYTE "2. Time Mode :- Score as much as possible in 120 seconds", 0
+        mode3           BYTE "3. Endless Mode :- Play forever while increasing difficulty PRESS x to exit", 0
 
-    mode4           BYTE "Select Mode (1-3): ", 0
-    modeTitle       BYTE "GAME MODE SELECTION", 0
-
-    
-   
+        mode4           BYTE "Select Mode (1-3): ", 0
+        modeTitle       BYTE "GAME MODE SELECTION", 0
 
 
-    ; end of game over
-    gameover1       BYTE "GAME OVER!", 0
-    gameover2       BYTE "Reason: Out of Fuel!" , 0
-    gameover3       BYTE "Reason: Score went negative!", 0
-    final_score   BYTE "Final Score: ", 0
-    end_game        BYTE "Thanks for playing!", 0
-     ; difficulty
-    diff1           BYTE "DIFFICULTY LEVELS :  " , 0
-    diff3           BYTE "2. Medium - 500 Fuel, 7 Obstacles & Normal Cars", 0
-    diff4           BYTE "3. Hard   - 300 Fuel, 10 Obstacles & Fast Cars", 0
-    diff2           BYTE "1. Easy    - 1000 Fuel, 5 Obstacles &  Slow Cars", 0    
-    diff5           BYTE "Select (1-3) : ", 0
-    ;File
-    filehandle      DWORD ?
-    savegamefilenametxt    BYTE "savegame.txt", 0
-    filenametxt      BYTE "highscores.txt", 0
-    bytes_written     DWORD ?
-    ;Leaderboard
-    highScores      DWORD 10 DUP(0)
-    highNames       BYTE 300 DUP(?)
-    tempScore       DWORD ?
-    ;instructions menu
-    inst1           BYTE "instructions : ", 0
-    
-    inst12          BYTE "YELLOW TAXI MODE:", 0
-    inst13          BYTE "  Faster movement", 0
-    inst14          BYTE "  Obstacle damage -4 points", 0
-    inst15          BYTE "  Car collision -2 points", 0
-    inst2           BYTE "  W/A/S/D - Move taxi", 0
-    inst3           BYTE "  SPACEbar - Pick up/drop passenger", 0
-    inst4           BYTE "  P - Pause game & L - to save", 0
-    inst5           BYTE "  X - Exit to menu", 0
-    inst6           BYTE "OBJECTIVE:", 0
-    inst7           BYTE "  Pick up stick figures (\O/)", 0
-    inst8           BYTE "  Drop at GREEN destinations (*DST)", 0
-    inst9           BYTE "  +10 points per delivery", 0
-    inst10          BYTE "  Collect gems and other precious items for bonus +10 points", 0
-    inst11          BYTE "  Avoid obstacles and other cars!", 0
-
-    inst16          BYTE "RED TAXI:", 0
-    inst17          BYTE "  Slower but tougher", 0
-    inst18          BYTE "  Obstacle damage -2 points", 0
-    inst19          BYTE "  Car collision -3 points", 0
-    inst20          BYTE "Hit passenger -5 points", 0
-    inst21          BYTE "After every 2 deliveries you get Faster cars! ", 0
-    inst22          BYTE "Press any key to continue", 0
-    ; leaderboard
-    lb1             BYTE "TOP 10 HIGH SCORES: ", 0
-    lb2             BYTE "Rank   Name                         Score", 0
-    lb3             BYTE "------------------------------------------", 0
-    lb4             BYTE "No scores yet  ", 0
-    lb5             BYTE "Press any key to continue", 0
-    
-    ;top of screen
-     timeRemaining   BYTE " |  Time: ", 0
-    timeUp          BYTE "TIME'S UP!", 0
-    score_display        BYTE "Score: ", 0
-    fuel_display         BYTE " | Fuel: ", 0
-    pass_display         BYTE " | Active: ", 0
-    mode_display         BYTE " | Mode: ", 0
-    mode_career_txt      BYTE "Career", 0
-    mode_time_txt        BYTE "Time", 0
-    mode_endless_txt     BYTE "Endless", 0
-    donedropped_display         BYTE " | Delivered: ", 0
-    carrying_display        BYTE ">>> Carrying passenger!!!! Go to GREEN destination NOWW! (you cannot pickup another till you dropoff) <<<", 0
-    items_on_board       BYTE "Taxi=[T]  Passenger=\O/  Tree=TR  Box=[#]  Car=[C]  Bonus=$ , <> , etc. ", 0
-    endless_session_high    DWORD 0
-    endless_high_msg        BYTE " | Session Best: ", 0
-    
-     pauseTitle      BYTE "=== GAME PAUSED ===", 0
-    pauseMsg1       BYTE "Press P to Resume", 0
-    pauseMsg2       BYTE "Press X to Exit to Menu", 0
-
-PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
-start db "start.wav", 0
-carCrash db "C:\sounds\crash.wav",0
-pickup   db "C:\sounds\pickup.wav",0
-SND_SYNC        equ 0h
-SND_ASYNC       equ 1h
-SND_NODEFAULT   equ 2h
-SND_MEMORY      equ 4h
-SND_LOOP        equ 8h
-SND_NOSTOP      equ 10h
-SND_NOWAIT      equ 2000h
-SND_FILENAME    equ 20000h
 
 
+
+        ; end of game over
+        gameover1       BYTE "GAME OVER!", 0
+        gameover2       BYTE "Reason: Out of Fuel!", 0
+        gameover3       BYTE "Reason: Score went negative!", 0
+        final_score   BYTE "Final Score: ", 0
+        end_game        BYTE "Thanks for playing!", 0
+        ; difficulty
+        diff1           BYTE "DIFFICULTY LEVELS :  ", 0
+        diff3           BYTE "2. Medium - 500 Fuel, 7 Obstacles & Normal Cars", 0
+        diff4           BYTE "3. Hard   - 300 Fuel, 10 Obstacles & Fast Cars", 0
+        diff2           BYTE "1. Easy    - 1000 Fuel, 5 Obstacles &  Slow Cars", 0
+        diff5           BYTE "Select (1-3) : ", 0
+        ; File
+        filehandle      DWORD ?
+        savegamefilenametxt    BYTE "savegame.txt", 0
+        filenametxt      BYTE "highscores.txt", 0
+        bytes_written     DWORD ?
+        ; Leaderboard
+        highScores      DWORD 10 DUP(0)
+        highNames       BYTE 300 DUP(? )
+        tempScore       DWORD ?
+        ; instructions menu
+        inst1           BYTE "instructions : ", 0
+
+        inst12          BYTE "YELLOW TAXI MODE:", 0
+        inst13          BYTE "  Faster movement", 0
+        inst14          BYTE "  Obstacle damage -4 points", 0
+        inst15          BYTE "  Car collision -2 points", 0
+        inst2           BYTE "  W/A/S/D - Move taxi", 0
+        inst3           BYTE "  SPACEbar - Pick up/drop passenger", 0
+        inst4           BYTE "  P - Pause game & L - to save", 0
+        inst5           BYTE "  X - Exit to menu", 0
+        inst6           BYTE "OBJECTIVE:", 0
+        inst7           BYTE "  Pick up stick figures (\O/)", 0
+        inst8           BYTE "  Drop at GREEN destinations (*DST)", 0
+        inst9           BYTE "  +10 points per delivery", 0
+        inst10          BYTE "  Collect gems and other precious items for bonus +10 points", 0
+        inst11          BYTE "  Avoid obstacles and other cars!", 0
+
+        inst16          BYTE "RED TAXI:", 0
+        inst17          BYTE "  Slower but tougher", 0
+        inst18          BYTE "  Obstacle damage -2 points", 0
+        inst19          BYTE "  Car collision -3 points", 0
+        inst20          BYTE "Hit passenger -5 points", 0
+        inst21          BYTE "After every 2 deliveries you get Faster cars! ", 0
+        inst22          BYTE "Press any key to continue", 0
+        ; leaderboard
+        lb1             BYTE "TOP 10 HIGH SCORES: ", 0
+        lb2             BYTE "Rank   Name                         Score", 0
+        lb3             BYTE "------------------------------------------", 0
+        lb4             BYTE "No scores yet  ", 0
+        lb5             BYTE "Press any key to continue", 0
+
+        ; top of screen
+        timeRemaining   BYTE " |  Time: ", 0
+        timeUp          BYTE "TIME'S UP!", 0
+        score_display        BYTE "Score: ", 0
+        fuel_display         BYTE " | Fuel: ", 0
+        pass_display         BYTE " | Active: ", 0
+        mode_display         BYTE " | Mode: ", 0
+        mode_career_txt      BYTE "Career", 0
+        mode_time_txt        BYTE "Time", 0
+        mode_endless_txt     BYTE "Endless", 0
+        donedropped_display         BYTE " | Delivered: ", 0
+        carrying_display        BYTE ">>> Carrying passenger!!!! Go to GREEN destination NOWW! (you cannot pickup another till you dropoff) <<<", 0
+        items_on_board       BYTE "Taxi=[T]  Passenger=\O/  Tree=TR  Box=[#]  Car=[C]  Bonus=$ , <> , etc. ", 0
+        endless_session_high    DWORD 0
+        endless_high_msg        BYTE " | Session Best: ", 0
+
+        pauseTitle      BYTE "=== GAME PAUSED ===", 0
+        pauseMsg1       BYTE "Press P to Resume", 0
+        pauseMsg2       BYTE "Press X to Exit to Menu", 0
+
+        ;sounds
+        PlaySound PROTO, pszSound:PTR BYTE, hmod:DWORD, fdwSound:DWORD
+        start db "start.wav", 0
+        carCrash db "collision.wav",0
+        pickup   db "pickup.wav",0
+        bonus_collect   db "bonus_collect.wav", 0
+        gameover_sound   db "gameover.wav", 0
+        pause_sound  db "pickup.wav", 0
+
+            SND_SYNC        equ 0h
+            SND_ASYNC       equ 1h
+            SND_NODEFAULT   equ 2h
+            SND_MEMORY      equ 4h
+            SND_LOOP        equ 8h
+            SND_NOSTOP      equ 10h
+            SND_NOWAIT      equ 2000h
+            SND_ALIAS       equ 10000h
+            SND_FILENAME    equ 20000h
+            
+
+
+            
 
 
 
@@ -1109,9 +1116,7 @@ initialize_newgame  PROC
     
 
 SpawnPass:
-
     cmp ecx, 0
-
     je passengers_placed
     cmp esi, MAX_PASSENGERS 
     jge passengers_placed
@@ -1120,7 +1125,6 @@ SpawnPass:
     
     
 passengers_position_find :
-
     call road_position_find  ;find position for passenger (not at 0,0)
     cmp al, 0 ;doublecheck kay 0,0 par spawn nah ho
 
@@ -1207,85 +1211,108 @@ clear_sab:
     dec ecx
     jmp clear_sab
 
+    skip_obs :
+        mov eax, obstaclecount
+        cmp eax, 0
+        je skip_obspawn
 
-skip_obs:
+        mov ecx, eax
+        xor esi, esi
 
-    mov eax, obstaclecount
-    cmp eax, 0
-    je skip_obspawn
-    
-    mov ecx, eax
-    xor esi, esi
-    
+    spawn_obs :
+        cmp ecx, 0
+        je obst_placed
+        cmp esi, 10
+        jge obst_placed
 
-spawn_obs:
-    cmp ecx, 0
-    je obst_placed
-    cmp esi, 10 ;total 10 or max 10
-    jge obst_placed
+        push ecx
+
+    find_obsposition :
+        call road_position_find
+        cmp al, 0
+        jne obst_pos_ok
+        cmp ah, 0
+        jne obst_pos_ok
+        jmp find_obsposition
+
+    obst_pos_ok :
+        ; if position is free
+            mov bl, al
+            mov bh, ah
+            push eax
+            call is_position_occupied
+            pop eax
+            cmp al, 1
+            je find_obsposition; alr occ find something else
+            mov al, bl
+            mov ah, bh
+            push eax
+            mov eax, 2
+            call RandomRange
+
+            mov edi, offset obsttype
+            add edi, esi
+            mov[edi], al; tree
+            cmp al, 1
+            jne store_obstacle
+            pop eax
+            push eax
+            mov bl, al
+            mov bh, ah
+            inc bh
+            cmp bh, 19
+            jg find_obsposition;bohat close neechay
+            push esi
+            call is_position_occupied
+            pop esi
+            cmp al, 1
+            je find_obsposition;overlap with trunk
+
+    store_obstacle :
+        pop eax
+        mov edi, offset obstX
+
+        add edi, esi
+        mov[edi], al
+        mov edi, offset obstY
+        add edi, esi
+        mov[edi], ah
+        inc esi
+        pop ecx
+        dec ecx
+        
+        jmp spawn_obs
+
     
-    push ecx
+    obst_placed:
+    skip_obspawn:
+        ; Spawn 5 cars (continue with existing car spawn code)
+        mov npc_count, 5
+        mov ecx, 5
+        xor esi, esi
     
+    spawncar:
+        cmp ecx, 0
+        je car_done
+        push ecx
+        call road_position_find 
+        mov edi, offset carX
+
+        add edi, esi
+        mov [edi], al
+        mov edi, offset carY
+        add edi, esi
+        mov [edi], ah
     
-find_obsposition:
-    call road_position_find 
-  
-    cmp al, 0 ; 0 ,0 check
-    jne obst_pos_ok
-    cmp ah, 0
-    jne obst_pos_ok
-   
-    jmp find_obsposition    ; (0,0) so find another position
+        mov eax, 4
+        call RandomRange
     
-obst_pos_ok:
-    mov edi, offset obstX
-    add edi, esi
-    mov [edi], al
-    
-    mov edi, offset obstY
-    add edi, esi
-    mov [edi], ah
-    
-    mov eax, 2
-    call RandomRange
-    mov edi, offset obsttype
-    add edi, esi
-    mov [edi], al
-    
-    inc esi
-    pop ecx
-    dec ecx
-    jmp spawn_obs
-    
-obst_placed:
-skip_obspawn:
-    ; Spawn 5 cars (continue with existing car spawn code)
-    mov npc_count, 5
-    mov ecx, 5
-    xor esi, esi
-    
-spawncar:
-    cmp ecx, 0
-    je car_done
-    push ecx
-    
-    call road_position_find 
-    mov edi, offset carX
-    add edi, esi
-    mov [edi], al
-    mov edi, offset carY
-    add edi, esi
-    mov [edi], ah
-    
-    mov eax, 4
-    call RandomRange
-    
-    cmp eax, 0
-    je dir_up
-    cmp eax, 1
-    je dir_down
-    cmp eax, 2
-    je dir_left
+        cmp eax, 0
+        je dir_up
+        cmp eax, 1
+        je dir_down
+        cmp eax, 2
+        je dir_left
     
 
 
@@ -1568,135 +1595,149 @@ board_generate_hogaya_pls:
 
 generateBoard ENDP
 ;---------------------------------------------------------------------------------------------------------------------------------------------------
-
-road_position_find  PROC
-
+road_position_find PROC
     push ebx
     push ecx
     push edx
     push esi
-    
-    mov ecx, 500 ;try 500 times
-    
-find_loop:
-    cmp ecx, 0
-    je use_fallback
-   
-    push ecx
-    mov eax, 100
-    call RandomRange
-    pop ecx
-    cmp eax, 80
-    jl spawnnewcorr
-    
-spawnanywhere:
-    
-    mov eax, 20;20% chance
-    call RandomRange
-    mov bl, al
-    mov eax, 20
-    call RandomRange
-    mov bh, al
-    jmp pos_check
-    
-spawnnewcorr:
-    mov eax, 4
-    call RandomRange
-    mov edx, 5
-    mul dl
-    mov bl, al  
-    push ebx
-    mov eax, 3
-    call RandomRange
-    dec al  ; -1, 0 or 1
-    pop ebx
-    add bl, al
-    cmp bl, 0;clamp to 0-19
-    jl spawnanywhere
-    cmp bl, 19
-    jg spawnanywhere
-    mov eax, 4;y
-    call RandomRange
-    mov edx, 5
-    mul dl
-    mov bh, al
-    
-    push ebx
-    mov eax, 3
-    call RandomRange
-    dec al
-    pop ebx
-    add bh, al
-    
-    cmp bh, 0
-    jl spawnanywhere
-    cmp bh, 19
-    jg spawnanywhere
-    
-pos_check:
-    cmp bl, 0 ;0,0 check
-    jne playernot_atstart
-    cmp bh, 0
-    je retry
-    
-playernot_atstart:
-    cmp bl, playerX
-    jne not_currpos
-    cmp bh, playerY
-    je retry
-;road hi
-not_currpos:
-    push ecx
-    push ebx
-    mov al, bh
-    xor ah, ah
-    mov dl, 20
-    mul dl
-    xor ch, ch
-    mov cl, bl
-    add ax, cx
-    
-    mov esi, offset board
-    add esi, eax
-    cmp BYTE PTR [esi], 1
-    pop ebx
-    pop ecx
-    jne retry
-   
-    cmp bl, 1 ;isolated cor
-    jl retry
-    cmp bl, 18
-    jg retry
-    cmp bh, 1
-    jl retry
-    cmp bh, 18
-    jg retry
-   
-    jmp road_found  ;valid pos
-    
-retry:
 
-    dec ecx
-    jmp find_loop
-  
- ;guaranree
-use_fallback:
-    mov bl, 5
-    mov bh, 5
-    
-road_found:
-    mov al, bl
-    mov ah, bh
-    
-    pop esi
-    pop edx
-    pop ecx
-    pop ebx
+    mov ecx, 500; try 500 times
 
-    ret
+    find_loop :
+        cmp ecx, 0
+        je use_fallback
+        push ecx
+        mov eax, 100
+        call RandomRange
+        pop ecx
+        cmp eax, 80
+        jl spawnnewcorr
 
+    spawnanywhere :
+        mov eax, 20
+        call RandomRange
+        mov bl, al
+        mov eax, 20
+        call RandomRange
+        mov bh, al
 
-road_position_find  ENDP
+        jmp pos_check
+
+    spawnnewcorr :
+        mov eax, 4
+        call RandomRange
+        mov edx, 5
+        mul dl
+        mov bl, al
+        push ebx
+        mov eax, 3
+        call RandomRange
+        dec al
+        pop ebx
+        add bl, al
+        cmp bl, 0
+        jl spawnanywhere
+        cmp bl, 19
+        jg spawnanywhere
+        mov eax, 4
+        call RandomRange
+        mov edx, 5
+        mul dl
+
+        mov bh, al
+        push ebx
+        mov eax, 3
+        call RandomRange
+        dec al
+        pop ebx
+        add bh, al
+        cmp bh, 0
+        jl spawnanywhere
+        cmp bh, 19
+        jg spawnanywhere
+
+    pos_check :
+        cmp bl, 0
+        jne playernot_atstart
+        cmp bh, 0
+        je retry
+
+   playernot_atstart :
+         cmp bl, playerX
+        jne not_currpos
+        cmp bh, playerY
+        je retry
+
+    not_currpos :
+         push ecx
+             push ebx
+             mov al, bh
+             xor ah, ah
+             mov dl, 20
+             mul dl
+             xor ch, ch
+             mov cl, bl
+             add ax, cx
+             mov esi, offset board
+             add esi, eax
+             cmp BYTE PTR[esi], 1
+             pop ebx
+
+             pop ecx
+             jne retry
+             cmp bl, 1
+             jl retry
+             cmp bl, 18
+             jg retry
+             cmp bh, 1
+             jl retry
+             cmp bh, 18
+             jg retry
+
+             push ecx
+             call is_position_occupied
+             pop ecx
+
+             cmp al, 1
+             je retry; pos oc try again
+             ;y+1
+            push ebx
+            inc bh;one row below
+            cmp bh, 19
+            jg skip_trunk_check
+
+            push ecx
+            call is_position_occupied
+            pop ecx
+            pop ebx
+            cmp al, 1
+            je retry;conflicttrunk pos
+            jmp road_found
+
+        skip_trunk_check :
+             pop ebx
+            jmp road_found
+
+        retry :
+           dec ecx
+         jmp find_loop
+
+    use_fallback :
+        mov bl, 5
+        mov bh, 5
+
+    road_found :
+        mov al, bl
+        mov ah, bh
+
+        pop esi
+        pop edx
+        pop ecx
+        pop ebx
+        ret
+        
+ 
+road_position_find ENDP
 
 ;------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------=
 
@@ -1912,7 +1953,8 @@ spacbar_func:
     call pickup_dropoff_handling
     jmp gameover_check
 
-pausegame:
+        pausegame:
+    invoke PlaySound, addr pause_sound, 0, SND_ASYNC + SND_FILENAME
     call Pause_display
     
 pause_screen_wait:
@@ -1955,12 +1997,13 @@ skipfuel_check:
 fuel_finito:
 
     call Clrscr
+    invoke PlaySound, addr gameover_sound, 0, SND_ASYNC + SND_FILENAME
     mov eax, red + (black * 16)
     call settextcolor
     mov edx, offset gameover1
     call WriteString
     call Crlf
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
+    
 
     call Crlf
     mov eax, white + (black * 16)
@@ -1969,15 +2012,16 @@ fuel_finito:
     call WriteString
     call Crlf
     jmp finalstats
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
+    
 
 score_negative:
     call Clrscr
+    invoke PlaySound, addr gameover_sound, 0, SND_ASYNC + SND_FILENAME
     mov eax, red + (black * 16)
     call settextcolor
     mov edx, offset gameover1
     call WriteString
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
+    
 
     call Crlf
     call Crlf
@@ -1986,7 +2030,8 @@ score_negative:
     mov edx, offset gameover3
     call WriteString
     call Crlf
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
+
+    
 
 finalstats:
     mov edx, offset final_score
@@ -1997,7 +2042,7 @@ finalstats:
     call Crlf
     mov edx, offset end_game
     call WriteString
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
+    
 
     call Crlf
     call WaitMsg
@@ -2015,373 +2060,650 @@ finito:
 the_gameloop_main ENDP
 
 ;-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+; ----------------------------------------
 moveup_try PROC
     push eax
     push ebx
-    
     inc move_speed_counter
-    
     mov al, taxicolor
     cmp al, 0
     je allowmoveup
-    
     mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
     je move_fail_up
-    
-allowmoveup:
-    mov al, playerY
-    cmp al, 0
-    je move_fail_up
-    
-   dec al
-    mov bh, al
-    mov bl, playerX
-     call is_road
-    cmp al, 0
-    je move_fail_up
-    
-    dec playerY ;valid
-    
 
-    push eax
-    mov al, currentMode
-    cmp al, 2  ; Endless mode = 2
-    je skip_fuel_up
-    dec fuel_amt
+    allowmoveup :
+        mov al, playerY
+        cmp al, 0
+        je move_fail_up
 
-skip_fuel_up:
-    pop eax
-    
-    call check_for_collisions
-    
-move_fail_up:
-    pop ebx
-    pop eax
+        dec al
+        mov bh, al
+        mov bl, playerX
+        call is_road; check for road
+        cmp al, 0
+        je move_fail_up
+        call has_obstacle
+        cmp al, 1
+        je hit_obstacle_up
+        dec playerY
+        push eax
+        mov al, currentMode
+        cmp al, 2
+        je skip_fuel_up
+        dec fuel_amt
 
+    skip_fuel_up :
+        pop eax
 
-    ret
+        call check_for_collisions
+        jmp move_fail_up
+
+        hit_obstacle_up :
+        mov al, taxicolor;obstacle dont move on it
+        cmp al, 0
+        je yellow_hit_up
+        sub playerscore, 2;Red
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+        jmp move_fail_up
+
+    yellow_hit_up :
+        sub playerscore, 4;Yellow
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+       
+
+    move_fail_up :
+        pop ebx
+        pop eax
+        ret
 
 
 moveup_try ENDP
 
 
-;----------------------------------------
+; ----------------------------------------
+       
 movedown_try PROC
-    push eax
-    push ebx
-    
-    inc move_speed_counter
-    
-    mov al, taxicolor
-    cmp al, 0
-    je allowmovedown
-    
-    mov eax, move_speed_counter
-    and eax, 1
-    cmp eax, 1
-    je move_fail_down
-    
-allowmovedown:
-    mov al, playerY
-    cmp al, 19
-    jge move_fail_down
-    
-    inc al
-    mov bh, al
-    mov bl, playerX
-    call is_road
-    cmp al, 0
-    je move_fail_down
-    
-    inc playerY
-    push eax
-    mov al, currentMode
-    cmp al, 2
-    je skip_fuel_down
-    dec fuel_amt
 
-skip_fuel_down:
-    pop eax
-    
-    call check_for_collisions
-    
-move_fail_down:
-    pop ebx
-    pop eax
-    ret
+        push eax
+        push ebx
+        inc move_speed_counter
+        mov al, taxicolor
+        cmp al, 0
+        je allowmovedown
+        mov eax, move_speed_counter
+        and eax, 1
+        cmp eax, 1
+        je move_fail_down
+
+        allowmovedown :
+            mov al, playerY
+            cmp al, 19
+            jge move_fail_down
+            inc al
+            mov bh, al
+            mov bl, playerX
+            call is_road
+            cmp al, 0
+            je move_fail_down
+            call has_obstacle;obstacles
+            cmp al, 1
+            je hit_obstacle_down
+
+            inc playerY
+            push eax
+            mov al, currentMode
+            cmp al, 2
+            je skip_fuel_down
+            dec fuel_amt
+
+    skip_fuel_down :
+            pop eax
+
+            call check_for_collisions
+            jmp move_fail_down
+
+   hit_obstacle_down :
+        mov al, taxicolor
+        cmp al, 0
+        je yellow_hit_down
+        sub playerscore, 2
+       invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+        
+        jmp move_fail_down
+
+   yellow_hit_down :
+        sub playerscore, 4
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+
+   move_fail_down :
+        pop ebx
+        pop eax
+        ret
 
 
 movedown_try ENDP
 
-;---------------------------------------------
+; -------------------------------------------- -
 moveleft_try PROC
-    push eax
-    push ebx
-    
-    inc move_speed_counter
-    
-    mov al, taxicolor
-    cmp al, 0
-    je allowmoveleft
-    
-    mov eax, move_speed_counter
-    and eax, 1
-    cmp eax, 1
-    je move_fail_left
-    
-allowmoveleft:
-    mov al, playerX
-    cmp al, 0
-    je move_fail_left
-    
-    dec al
-    mov bl, al
-    mov bh, playerY
-    call is_road
-    cmp al, 0
-    je move_fail_left
-    
-    dec playerX
-    
-    push eax
-    mov al, currentMode
-    cmp al, 2
-    je skip_fuel_left
-    dec fuel_amt
+     push eax
+     push ebx
+     inc move_speed_counter
+
+     mov al, taxicolor
+     cmp al, 0
+     je allowmoveleft
+     mov eax, move_speed_counter
+     and eax, 1
+     cmp eax, 1
+     je move_fail_left
+
+  allowmoveleft :
+        mov al, playerX
+        cmp al, 0
+        je move_fail_left
+
+        dec al
+        mov bl, al
+        mov bh, playerY
+
+        call is_road
+        cmp al, 0
+        je move_fail_left
+        call has_obstacle
+        cmp al, 1
+        je hit_obstacle_left
+        dec playerX
+        push eax
+        mov al, currentMode
+        cmp al, 2
+        je skip_fuel_left
+        dec fuel_amt
+
+   skip_fuel_left :
+        pop eax
+
+        call check_for_collisions
+        jmp move_fail_left
 
 
-skip_fuel_left:
-    pop eax
-    
-    call check_for_collisions
-    
-move_fail_left:
-    pop ebx
-    pop eax
-    ret
+   hit_obstacle_left :
+        mov al, taxicolor
+        cmp al, 0
+        je yellow_hit_left
+        sub playerscore, 2
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+        jmp move_fail_left
+
+   yellow_hit_left :
+        sub playerscore, 4
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+
+   move_fail_left :
+        pop ebx
+        pop eax
+        ret
 
 
 moveleft_try ENDP
 
-;-------------------------------------------
-
+; ------------------------------------------ -
 moveright_try PROC
     push eax
     push ebx
-    
-    inc move_speed_counter
-    
+
+   inc move_speed_counter
     mov al, taxicolor
     cmp al, 0
     je allowmoveright
-    
     mov eax, move_speed_counter
     and eax, 1
     cmp eax, 1
     je move_fail_right
-    
-allowmoveright:
-    mov al, playerX
-    cmp al, 19
-    jge move_fail_right
-    
-    inc al
-    mov bl, al
-    mov bh, playerY
-    call is_road
-    cmp al, 0
-    je move_fail_right
-    
-    inc playerX
-    
-    push eax
-    mov al, currentMode
-    cmp al, 2
-    je skip_fuel_right
-    dec fuel_amt
+
+    allowmoveright :
+        mov al, playerX
+        cmp al, 19
+        jge move_fail_right
+
+        inc al
+        mov bl, al
+        mov bh, playerY
+        call is_road
+        cmp al, 0
+        je move_fail_right
+        call has_obstacle
+        cmp al, 1
+        je hit_obstacle_right
+        inc playerX
+        push eax
+        mov al, currentMode
+        cmp al, 2
+        je skip_fuel_right
+        dec fuel_amt
+
+    skip_fuel_right :
+         pop eax
+
+        call check_for_collisions
+        jmp move_fail_right
+
+    hit_obstacle_right :
+        mov al, taxicolor
+        cmp al, 0
+        je yellow_hit_right
+        sub playerscore, 2
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+        jmp move_fail_right
+
+    yellow_hit_right :
+        sub playerscore, 4
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+
+    move_fail_right :
+        pop ebx
+        pop eax
+        ret
 
 
-skip_fuel_right:
-    pop eax
-    
-    call check_for_collisions
-    
-move_fail_right:
+        moveright_try ENDP
+ ; ----------------------------------------
+
+is_road PROC
+    push ebx
+    push ecx
+    push esi
+    mov al, bh
+    xor ah, ah
+    mov cl, 20
+    mul cl
+    xor ch, ch
+    mov cl, bl
+    add ax, cx
+    mov esi, offset board
+    add esi, eax
+    mov al, [esi]
+
+    pop esi
+    pop ecx
     pop ebx
-    pop eax
     ret
 
 
-
-moveright_try ENDP
-
-;----------------------------------------
-
-is_road PROC
-push ebx
-push ecx
-push esi
-mov al, bh
-xor ah, ah
-mov cl, 20
-mul cl
-xor ch, ch
-mov cl, bl
-add ax, cx
-
-mov esi, offset board
-add esi, eax
-mov al, [esi]
-
-pop esi
-pop ecx
-pop ebx
-ret
 is_road ENDP
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+is_position_occupied PROC
+    push ebx
+    push ecx
+    push esi
+    push edi
+    mov ecx, obstaclecount
+    xor esi, esi
+
+    check_obstacles :
+           cmp esi, ecx
+           jge check_passengers_pos
+
+            mov edi, OFFSET obstX
+            add edi, esi
+            mov al, [edi]
+            cmp al, bl
+            jne next_obst_check
+            mov edi, OFFSET obstY
+            add edi, esi
+            mov al, [edi]
+            cmp al, bh
+            je position_occupied
+            ;treetrunk y+1
+            mov edi, OFFSET obsttype
+            add edi, esi
+            cmp BYTE PTR[edi], 1; Is it a tree ?
+            jne next_obst_check
+            mov edi, OFFSET obstY
+            add edi, esi
+            mov al, [edi]
+            inc al; Trunk at Y + 1
+            cmp al, bh
+            je position_occupied
+
+         next_obst_check :
+            inc esi
+            jmp check_obstacles
+
+            check_passengers_pos :
+            mov ecx, MAX_PASSENGERS
+            xor esi, esi
+
+            check_pass_loop :
+            cmp esi, ecx
+            jge check_cars_pos
+            mov edi, OFFSET pass_active
+            add edi, esi
+
+            cmp BYTE PTR[edi], 0
+            je next_pass_check
+
+            mov edi, OFFSET pass_picked
+            add edi, esi
+            cmp BYTE PTR[edi], 1
+            je next_pass_check
+            mov edi, OFFSET passX
+
+            add edi, esi
+            mov al, [edi]
+            cmp al, bl
+            jne check_pass_dest
+            mov edi, OFFSET passY
+            add edi, esi
+            mov al, [edi]
+            cmp al, bh
+            je position_occupied
+
+        check_pass_dest :
+            mov edi, OFFSET pass_picked
+            add edi, esi
+            cmp BYTE PTR[edi], 1
+            jne next_pass_check
+            mov edi, OFFSET passdestX
+            add edi, esi
+            mov al, [edi]
+            cmp al, bl
+            jne next_pass_check
+            mov edi, OFFSET passdestY
+            add edi, esi
+
+            mov al, [edi]
+            cmp al, bh
+            je position_occupied
+
+        next_pass_check :
+            inc esi
+            jmp check_pass_loop
+
+        check_cars_pos :
+            mov ecx, npc_count
+            xor esi, esi
+
+        check_cars_loop :
+            cmp esi, ecx
+            jge check_bonus_pos
+            mov edi, OFFSET npc_active
+            add edi, esi
+            cmp BYTE PTR[edi], 0
+            je next_car_check
+            mov edi, OFFSET carX
+            add edi, esi
+            mov al, [edi]
+            cmp al, bl
+            jne next_car_check
+            mov edi, OFFSET carY
+            add edi, esi
+            mov al, [edi]
+
+            cmp al, bh
+            je position_occupied
+
+        next_car_check :
+            inc esi
+            jmp check_cars_loop
+
+        check_bonus_pos :
+            mov ecx, bonuscount
+            xor esi, esi
+
+        check_bonus_loop :
+            cmp esi, ecx
+            jge check_player_pos
+            mov edi, OFFSET bonusonboard
+            add edi, esi
+            cmp BYTE PTR[edi], 0
+            je next_bonus_check
+            mov edi, OFFSET bonusX
+            add edi, esi
+            mov al, [edi]
+
+            cmp al, bl
+            jne next_bonus_check
+            mov edi, OFFSET bonusY
+            add edi, esi
+            mov al, [edi]
+            cmp al, bh
+            je position_occupied
+
+         next_bonus_check :
+            inc esi
+            jmp check_bonus_loop
+
+        check_player_pos :
+            mov al, playerX
+            cmp al, bl
+            jne position_free
+
+            mov al, playerY
+            cmp al, bh
+            je position_occupied
+
+        position_free :
+            mov al, 0
+            jmp pos_check_done
+
+         position_occupied :
+            mov al, 1
+
+      pos_check_done :
+            pop edi
+            pop esi
+            pop ecx
+            pop ebx
+
+            ret
+  
+            
+ is_position_occupied ENDP
+
+
+;-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+has_obstacle PROC
+    push ebx
+    push ecx
+    push esi
+    push edi
+
+    mov ecx, obstaclecount
+    xor esi, esi
+
+    check_obstacle_loop :
+         cmp esi, ecx
+         jge no_obstacle_found
+         push ecx
+
+        ;obstacle X & Y match check
+         mov edi, OFFSET obstX
+         add edi, esi
+         mov al, [edi]
+         cmp al, bl
+         jne next_obstacle
+         mov edi, OFFSET obstY
+         add edi, esi
+         mov al, [edi]
+
+         cmp al, bh
+         je obstacle_found_at_main_pos
+
+        ; check for tree
+         mov edi, OFFSET obsttype
+         add edi, esi
+         mov al, [edi]
+         cmp al, 1; 1 = tree
+         jne next_obstacle
+
+        ;one row below the tree check
+         mov edi, OFFSET obstY
+         add edi, esi
+         mov al, [edi]
+         inc al; trunk is Y + 1
+         cmp al, bh
+         jne next_obstacle
+
+         obstacle_found_at_main_pos :
+         pop ecx
+         mov al, 1; obstacle found
+        jmp obstacle_check_done
 
 
 
+     next_obstacle :
+         inc esi
+         pop ecx
+         jmp check_obstacle_loop
+
+         no_obstacle_found :
+         mov al, 0; no obstacle
+
+
+     obstacle_check_done :
+         pop edi
+         pop esi
+         pop ecx
+         pop ebx
+         ret
+
+
+has_obstacle ENDP
 ;-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-check_for_collisions  PROC
 ; removed passenger collision because how  will the car pick up the passenger without hitting them so tried the functionality to pick them from the side but still gonna remove the pick fromside functionality as maybe there might be and issue with that 
+check_for_collisions  PROC
+
     push eax
     push ebx
     push ecx
     push esi
-    mov ecx, obstaclecount
+    mov ecx, MAX_PASSENGERS
     xor esi, esi
-    
-check_obst:
-    cmp esi, ecx
-    jge carcollisions
-    push ecx
-    
 
-    mov edi, offset obstX
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerX
-    jne next_obst
-    mov edi, offset obstY
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerY
-    jne next_obst
-    mov al, taxicolor;collision
-    cmp al, 0
-    je yellowttaxi_obs
-    sub playerscore, 2 ;red T
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
-    jmp next_obst
-    
-yellowttaxi_obs:
-    sub playerscore, 4
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
-    
-next_obst:
-    inc esi
-    pop ecx
+    check_passenger_collision :
+        cmp esi, ecx
+        jge carcollisions
+        push ecx
 
-    jmp check_obst
-    
-carcollisions:
+        mov edi, offset pass_active
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        je next_passenger
 
-    mov ecx, npc_count
-    xor esi, esi
-    
-check_carcollision:
+        mov edi, offset pass_picked
+        add edi, esi
+        cmp BYTE PTR[edi], 1;skip if carrying pass
+        je next_passenger
+        mov edi, offset passX
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerX
+        jne next_passenger
 
-    cmp esi, ecx
-    jge bonus_pick
-    push ecx
-    mov edi, offset npc_active
+        mov edi, offset passY
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerY
+        jne next_passenger
+        sub playerscore, 5; passenger hit
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+       
 
-    add edi, esi
-    cmp BYTE PTR [edi], 0
-    je next_car
-    
-    mov edi, offset carX
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerX
-    jne next_car
-    mov edi, offset carY
+    next_passenger :
+        inc esi
+        pop ecx
+        jmp check_passenger_collision
 
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerY
-    jne next_car
-    mov al, taxicolor ; col
-    cmp al, 0
-    je yellow_car
-    sub playerscore, 3
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
-    jmp next_car
-    
-    yellow_car:
-        sub playerscore, 2
-        invoke PlaySound,addr start, 0 ,SND_ASYNC
+    carcollisions :
+        mov ecx, npc_count
+        xor esi, esi
 
-next_car:
-    inc esi
-    pop ecx
-    jmp check_carcollision
+    check_carcollision :
+       cmp esi, ecx
+        jge bonus_pick
+        push ecx
+        mov edi, offset npc_active
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        je next_car
 
+        mov edi, offset carX
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerX
+        jne next_car
+        mov edi, offset carY
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerY
+        jne next_car
+        mov al, taxicolor; car col
+        cmp al, 0
+        je yellow_car
+        sub playerscore, 3;red
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
+        jmp next_car
 
-    
-bonus_pick:
-    mov ecx, bonuscount
-    xor esi, esi
-    
-bonus_pickLoop:
-    cmp esi, ecx
-    jge collsions_complete
-    push ecx
-    mov edi, offset bonusonboard
-    add edi, esi
-    cmp BYTE PTR [edi], 0
+    yellow_car :
+        sub playerscore, 2;yellow
+        invoke PlaySound, addr carCrash, 0, SND_ASYNC + SND_FILENAME
 
-    je next_bonus
-    mov edi, offset bonusX
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerX
+     next_car :
+         inc esi
+        pop ecx
+        jmp check_carcollision
 
-    jne next_bonus
-    mov edi, offset bonusY
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerY
-    jne next_bonus
-    add playerscore, 10
-    mov edi, offset bonusonboard ;deactivate 
-    add edi, esi
+     bonus_pick :
+        mov ecx, bonuscount
+        xor esi, esi
 
-    mov BYTE PTR [edi], 0
-   
-    call MaintainBonusItems;respawn onn board 
-    
-next_bonus:
-    inc esi
+     bonus_pickLoop :
+        cmp esi, ecx
+            jge collsions_complete
+            push ecx
+            mov edi, offset bonusonboard
+            add edi, esi
+            cmp BYTE PTR[edi], 0
+            je next_bonus
 
-    pop ecx
-    jmp bonus_pickLoop
-    
+            mov edi, offset bonusX
+            add edi, esi
+            mov al, [edi]
+            cmp al, playerX
+            jne next_bonus
+            mov edi, offset bonusY
+            add edi, esi
+            mov al, [edi]
 
-collsions_complete:    
-    pop esi
-    pop ecx
-    pop ebx
-    pop eax
+            cmp al, playerY
+            jne next_bonus
+            add playerscore, 10
+            invoke PlaySound, addr bonus_collect, 0, SND_ASYNC + SND_FILENAME
+            mov edi, offset bonusonboard
+            add edi, esi
+            mov BYTE PTR[edi], 0
+            call MaintainBonusItems
+
+   next_bonus :
+        inc esi
+        pop ecx
+        jmp bonus_pickLoop
+
+   collsions_complete :
+        pop esi
+        pop ecx
+        pop ebx
+        pop eax
+        ret
 
 
-    ret
+ check_for_collisions  ENDP
 
-
-check_for_collisions  ENDP
 
 ;--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 pickup_dropoff_handling PROC
@@ -2455,23 +2777,24 @@ pickup_next:
     
 dropoff_try:
     mov esi, eax
-    mov edi, offset passdestX
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerX
-    jne pickedup_complete
-    mov edi, offset passdestY
-    add edi, esi
-    mov al, [edi]
-    cmp al, playerY
-    jne pickedup_complete
+        mov edi, offset passdestX
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerX
+        jne pickedup_complete
+        mov edi, offset passdestY
+        add edi, esi
+        mov al, [edi]
+        cmp al, playerY
+        jne pickedup_complete
+
+        mov edi, offset pass_active; dropped
+        add edi, esi
+        mov BYTE PTR[edi], 0
+        add playerscore, 10
+        mov carrying, -1
+        invoke PlaySound, addr pickup, 0, SND_ASYNC + SND_FILENAME
     
-    mov edi, offset pass_active;dropped
-    add edi, esi
-    mov BYTE PTR [edi], 0
-    add playerscore, 10    
-    mov carrying, -1
-    invoke PlaySound,addr start, 0 ,SND_ASYNC
     
     mov al, currentMode
     cmp al, 2
@@ -2510,7 +2833,6 @@ NoSpeedIncrease:
     
 
 pickedup_complete:
-invoke PlaySound,addr start, 0 ,SND_ASYNC
     pop edi
     pop esi
     pop ecx
@@ -2603,49 +2925,62 @@ drawentities:
     xor esi, esi
     
 drawobst:
-    cmp esi, ecx
-    jge draw_cars
-    
-    push ecx
-    mov edi, OFFSET obstX
-    add edi, esi
-    xor eax, eax
-    mov al, [edi]
+       cmp esi, ecx
+        jge draw_cars
 
-    mov dl, 4
-    mul dl
-    add al, 2
-    mov dl, al
-    
-    mov edi, OFFSET obstY
-    add edi, esi
-    mov dh, [edi]
-    add dh, 2
-    call Gotoxy
-    mov edi, OFFSET obsttype
-    add edi, esi
-    mov al, [edi]
-    cmp al, 0
-    je draw_box
-    
-    
-    mov eax, green + (white * 16)
-    call settextcolor
-    mov al, 6
-    call WriteChar
-    mov al, 'T'
-    call WriteChar
-    mov al, 'R'
-    call WriteChar
-    jmp next_obst
+        push ecx
+        mov edi, OFFSET obstX
+        add edi, esi
+        xor eax, eax
+        mov al, [edi]
 
-    draw_box:
-    ; Brown box - small box design
+        mov dl, 4
+        mul dl
+        add al, 2
+        mov dl, al
+
+        mov edi, OFFSET obstY
+        add edi, esi
+        mov dh, [edi]
+        add dh, 2
+        call Gotoxy
+        mov edi, OFFSET obsttype
+        add edi, esi
+        mov al, [edi]
+        cmp al, 0
+        je draw_box
+        push dx; save top position and make trunk
+        mov eax, lightGreen + (white * 16)
+        call SetTextColor
+        mov al, '/'
+        call WriteChar
+        mov al, '@'
+        call WriteChar
+        mov al, '@'
+        call WriteChar
+        mov al, '\'
+        call WriteChar
+        pop dx; restore top X, Y
+        inc dh; move one row down same col
+        call Gotoxy
+        mov eax, brown + (white * 16)
+        call SetTextColor
+        mov al, ' ';trunk
+        call WriteChar
+        mov al, '|'
+        call WriteChar
+        mov al, '|'
+        call WriteChar
+        mov al, ' '
+        call WriteChar
+        jmp next_obst
+
+ draw_box:
     mov eax, yellow + (brown * 16)
     call settextcolor
     mov al, '['
     call WriteChar
-    mov al, 'B'
+    mov al, '#'
     call WriteChar
     mov al, ']'
     call WriteChar
@@ -2684,14 +3019,15 @@ draw_car_loop:
     add dh, 2
     
     call Gotoxy
-    mov eax, lightCyan + (white * 16)
-    call settextcolor
-    mov al, '['
-    call WriteChar
-    mov al, 'C'
-    call WriteChar
-    mov al, ']'
-    call WriteChar
+        mov eax, white + (magenta * 16)
+        call SetTextColor
+
+        mov al, '['
+        call WriteChar
+        mov al, '>'
+        call WriteChar
+        mov al, ']'
+        call WriteChar
     
 car_skip:
     inc esi
@@ -2699,7 +3035,6 @@ car_skip:
     jmp draw_car_loop
     
 bonus_draw:
-    ; Draw bonus items
     mov ecx, bonuscount
     xor esi, esi
     
@@ -2708,12 +3043,10 @@ bonus_drawLoop:
     jge passenger_draw
     
     push ecx
-    
     mov edi, OFFSET bonusonboard
     add edi, esi
     cmp BYTE PTR [edi], 0
     je bonus_skip
-    
     mov edi, OFFSET bonusX
     add edi, esi
     xor eax, eax
@@ -2726,7 +3059,6 @@ bonus_drawLoop:
     add edi, esi
     mov dh, [edi]
     add dh, 2
-    
     call Gotoxy
     push eax
     mov eax, esi
@@ -2754,7 +3086,6 @@ coin_draw:
     jmp bonus_skip
     
 dollar_draw:
-    ; Dollar sign
     mov eax, lightGreen + (white * 16)
     call settextcolor
     mov al, ' '
@@ -2768,8 +3099,7 @@ dollar_draw:
 
 
 star_draw:
-    ; Star
-    mov eax, yellow + (white * 16)
+    mov eax, red + (white * 16)
     call settextcolor
     mov al, ' '
     call WriteChar
@@ -2780,7 +3110,6 @@ star_draw:
     jmp bonus_skip
     
 gem_draw:
-    ; Diamond/Gem
     mov eax, lightCyan + (white * 16)
     call settextcolor
     mov al, '<'
@@ -2797,7 +3126,6 @@ bonus_skip:
 
 
 passenger_draw:
-    ; Draw passengers
     mov ecx, MAX_PASSENGERS
     xor esi, esi
     
@@ -2806,7 +3134,6 @@ passenger_drawLoop:
     jge destination_draw
     
     push ecx
-    
     mov edi, OFFSET pass_active
     add edi, esi
     cmp BYTE PTR [edi], 0
@@ -2829,6 +3156,7 @@ passenger_drawLoop:
     mov dh, [edi]
     add dh, 2
     call Gotoxy
+
     ; Person waving
     mov eax, BLACK + (white * 16)
     call settextcolor
@@ -2848,7 +3176,7 @@ pssenger_skip:
 
     
 destination_draw:
-    ; Draw destination (GREEN BACKGROUND)
+    
     mov eax, carrying
     cmp eax, -1
     je player_draw
@@ -3205,153 +3533,258 @@ npc_car_move ENDP
 ;--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 PASSENGERS_RESPAWN PROC
-  push eax
-  push ebx
-  push ecx
-  push edx
-  push esi
-  xor eax, eax
-  xor ecx, ecx
-    
-ACTIVE_COUNT:
+push eax
+push ebx
+push ecx
+push edx
+push esi
+xor eax, eax
+xor ecx, ecx
+
+ACTIVE_COUNT :
     cmp ecx, MAX_PASSENGERS
-    jge SPAWN_CHECK
-    push ecx
-    mov esi, ecx
-    mov edi, offset pass_active
-    add edi, esi
-    cmp BYTE PTR [edi], 0
-    je ACTIVE_SKIP
-    mov edi, offset pass_picked
-    add edi, esi
-    cmp BYTE PTR [edi], 1
-    je ACTIVE_SKIP
-    
-    inc eax
-    
-ACTIVE_SKIP:
+        jge SPAWN_CHECK
+        push ecx
+        mov esi, ecx
+        mov edi, offset pass_active
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        je ACTIVE_SKIP
+        mov edi, offset pass_picked
+        add edi, esi
+        cmp BYTE PTR[edi], 1
+        je ACTIVE_SKIP
+
+        inc eax
+
+        ACTIVE_SKIP :
     pop ecx
-    inc ecx
-    jmp ACTIVE_COUNT
- 
- 
- ;'----------------
-SPAWN_CHECK:
+        inc ecx
+        jmp ACTIVE_COUNT
+
+        SPAWN_CHECK :
 spawnloop:
     cmp eax, 3
-    jge max_check
-    xor esi, esi ;INACTIVE SLOT DHONDO
-    
-slot_find:
+        jge max_check
+        xor esi, esi
+
+        slot_find :
     cmp esi, MAX_PASSENGERS
-    jge NoSpawn
-    
-    push esi
-    mov edi, offset pass_active
-    add edi, esi
-    cmp BYTE PTR [edi], 0
+        jge NoSpawn
+
+        push esi
+        mov edi, offset pass_active
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        pop esi
+        je FoundSlot
+
+        inc esi
+        jmp slot_find
+
+        FoundSlot :
+    push eax
+        push esi
+        mov ecx, 100; Try up to 100 times
+
+        find_pass_pos :
+    cmp ecx, 0
+        je failed_pass_spawn
+
+        push ecx
+        call road_position_find
+        mov bl, al
+        mov bh, ah
+
+        ; Check if occupied
+        push eax
+        call is_position_occupied
+        pop eax
+
+        pop ecx
+        cmp al, 1
+        je retry_pass_pos
+
+        ; Store passenger position
+        pop esi
+        push esi
+        mov edi, OFFSET passX
+        add edi, esi
+        mov[edi], bl
+        mov edi, OFFSET passY
+        add edi, esi
+        mov[edi], bh
+
+        ; Now find destination
+        mov ecx, 100
+
+        find_dest_pos:
+    cmp ecx, 0
+        je failed_pass_spawn
+
+        push ecx
+        call road_position_find
+        mov bl, al
+        mov bh, ah
+
+        ; Check if occupied
+        push eax
+        call is_position_occupied
+        pop eax
+
+        pop ecx
+        cmp al, 1
+        je retry_dest_pos
+
+        ; Store destination
+        pop esi
+        push esi
+        mov edi, OFFSET passdestX
+        add edi, esi
+        mov[edi], bl
+        mov edi, OFFSET passdestY
+        add edi, esi
+        mov[edi], bh
+        mov edi, OFFSET pass_picked
+        add edi, esi
+        mov BYTE PTR[edi], 0
+        mov edi, OFFSET pass_active
+        add edi, esi
+        mov BYTE PTR[edi], 1
+
+        pop esi
+        pop eax
+        inc eax
+        jmp spawnloop
+
+        retry_dest_pos :
+    dec ecx
+        jmp find_dest_pos
+
+        retry_pass_pos :
+    dec ecx
+        jmp find_pass_pos
+
+        failed_pass_spawn :
     pop esi
-    je FoundSlot
-    
-    inc esi
-    jmp slot_find
-    
-FoundSlot:
-    push eax
-    call road_position_find 
-    mov edi, OFFSET passX
-    add edi, esi
-    mov [edi], al
-    mov edi, OFFSET passY
-    add edi, esi
-    mov [edi], ah
-    call road_position_find 
-    mov edi, OFFSET passdestX
-    add edi, esi
-    mov [edi], al
-    mov edi, OFFSET passdestY
-    add edi, esi
-    mov [edi], ah
-    mov edi, OFFSET pass_picked
-    add edi, esi
-    mov BYTE PTR [edi], 0
-    
-    mov edi, OFFSET pass_active
-    add edi, esi
-    mov BYTE PTR [edi], 1
-    pop eax
-    inc eax
+        pop eax
+        jmp max_check
 
-    jmp spawnloop
-    
+        max_check :
+    cmp eax, 5
+        jge NoSpawn
+        push eax
+        mov eax, 100
+        call RandomRange
+        cmp eax, 30
+        pop eax
+        jg NoSpawn
 
-max_check:
-   cmp eax, 5
-    jge NoSpawn
-    push eax
-    mov eax, 100
-    call RandomRange
-    cmp eax, 30
-    pop eax
-    jg NoSpawn
-   
-    xor esi, esi ;inactive
-    
-slot_find2:
+        xor esi, esi
+
+        slot_find2 :
     cmp esi, MAX_PASSENGERS
-    jge NoSpawn
-    push esi
-    mov edi, OFFSET pass_active
-    add edi, esi
-    cmp BYTE PTR [edi], 0
+        jge NoSpawn
+        push esi
+        mov edi, OFFSET pass_active
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        pop esi
+        je slot_found2
+
+        inc esi
+        jmp slot_find2
+
+        slot_found2 :
+    push eax
+        push esi
+        mov ecx, 100
+
+        find_pass_pos2 :
+        cmp ecx, 0
+        je failed_spawn2
+
+        push ecx
+        call road_position_find
+        mov bl, al
+        mov bh, ah
+
+        push eax
+        call is_position_occupied
+        pop eax
+
+        pop ecx
+        cmp al, 1
+        je retry_pos2
+
+        pop esi
+        push esi
+        mov edi, OFFSET passX
+        add edi, esi
+        mov[edi], bl
+        mov edi, OFFSET passY
+        add edi, esi
+        mov[edi], bh
+
+        mov ecx, 100
+
+        find_dest_pos2:
+    cmp ecx, 0
+        je failed_spawn2
+
+        push ecx
+        call road_position_find
+        mov bl, al
+        mov bh, ah
+
+        push eax
+        call is_position_occupied
+        pop eax
+
+        pop ecx
+        cmp al, 1
+        je retry_dest2
+
+        pop esi
+        push esi
+        mov edi, OFFSET passdestX
+        add edi, esi
+        mov[edi], bl
+        mov edi, OFFSET passdestY
+        add edi, esi
+        mov[edi], bh
+        mov edi, OFFSET pass_picked
+        add edi, esi
+        mov BYTE PTR[edi], 0
+        mov edi, OFFSET pass_active
+        add edi, esi
+        mov BYTE PTR[edi], 1
+
+        pop esi
+        pop eax
+        inc eax
+        jmp max_check
+
+        retry_dest2 :
+    dec ecx
+        jmp find_dest_pos2
+
+        retry_pos2 :
+    dec ecx
+        jmp find_pass_pos2
+
+        failed_spawn2 :
     pop esi
-    je slot_found2
-    
-    inc esi
-    jmp slot_find2
-    
+        pop eax
 
-slot_found2:
-    push eax;spawn
-    call road_position_find 
-    mov edi, OFFSET passX
-    add edi, esi
-    mov [edi], al
-    
-    mov edi, OFFSET passY
-    add edi, esi
-    mov [edi], ah
-   call road_position_find 
-    mov edi, OFFSET passdestX
-    add edi, esi
-    mov [edi], al
-     mov edi, OFFSET passdestY
-    add edi, esi
-    mov [edi], ah
-    
-
-   mov edi, OFFSET pass_picked
-    add edi, esi
-    mov BYTE PTR [edi], 0
-    mov edi, OFFSET pass_active
-    add edi, esi
-    mov BYTE PTR [edi], 1
-    pop eax
-    inc eax
-   jmp max_check
-    
-NoSpawn:
-
+        NoSpawn :
     pop esi
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
-    ret
-
-
-
-PASSENGERS_RESPAWN ENDP
+        pop edx
+        pop ecx
+        pop ebx
+        pop eax
+        ret
+        PASSENGERS_RESPAWN ENDP
 
 ;-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -4041,70 +4474,88 @@ load_game_fromsaved ENDP
 ;yeh remove to just have some on board dekhlo;TODO
 
 MaintainBonusItems PROC
-    push eax
-    push ebx
-    push ecx
-    push esi
-    
-    ; Count active bonus items
-    xor eax, eax
-    xor ecx, ecx
-    
-CountBonus:
-    mov ebx, bonuscount
-    cmp ecx, ebx
-    jge bonus_pickSpawn
-    
-    push ecx
-    mov esi, ecx
-    
-    mov edi, OFFSET bonusonboard
-    add edi, esi
-    cmp BYTE PTR [edi], 0
-    je bonus_counter_skip
-    
-    inc eax
-    
-bonus_counter_skip:
-   pop ecx
-    inc ecx
-    jmp CountBonus
-    
-bonus_pickSpawn:
-    ; If less than 3 active, spawn new
-    cmp eax, 3
-    jge NoBonusSpawn
-    
-    mov eax, bonuscount
-    cmp eax, MAX_BONUS
-    jge NoBonusSpawn
-    
-    ; Spawn new bonus item
-    mov esi, eax
-    
-    call road_position_find 
-    mov edi, OFFSET bonusX
-    add edi, esi
-    mov [edi], al
-    
-    mov edi, OFFSET bonusY
-    add edi, esi
-    mov [edi], ah
-    
-    mov edi, OFFSET bonusonboard
-    add edi, esi
-    mov BYTE PTR [edi], 1
-    
-    inc bonuscount
-    
-NoBonusSpawn:
-    pop esi
-    pop ecx
-    pop ebx
-    pop eax
-    ret
-MaintainBonusItems ENDP
+push eax
+push ebx
+push ecx
+push esi
 
+xor eax, eax
+xor ecx, ecx
+
+CountBonus :
+       mov ebx, bonuscount
+        cmp ecx, ebx
+        jge bonus_pickSpawn
+        push ecx
+        mov esi, ecx
+        mov edi, OFFSET bonusonboard
+        add edi, esi
+        cmp BYTE PTR[edi], 0
+        je bonus_counter_skip
+
+        inc eax
+
+   bonus_counter_skip :
+        pop ecx
+        inc ecx
+        jmp CountBonus
+
+
+   bonus_pickSpawn :
+         cmp eax, 3
+        jge NoBonusSpawn
+        mov eax, bonuscount
+        cmp eax, MAX_BONUS
+        jge NoBonusSpawn
+        mov esi, eax
+        push esi
+        mov ecx, 100;try 100 times
+
+   find_free_bonus_pos :
+        cmp ecx, 0
+        je NoBonusSpawn_pop
+        push ecx
+        call road_position_find
+        mov bl, al
+        mov bh, ah
+        ; pos free
+        push eax
+        call is_position_occupied
+        pop eax
+        pop ecx
+        cmp al, 1
+        je try_again_bonus
+       ; bonus place
+        pop esi
+        mov edi, OFFSET bonusX
+        add edi, esi
+        mov[edi], bl
+        mov edi, OFFSET bonusY
+   
+         add edi, esi
+        mov[edi], bh
+        mov edi, OFFSET bonusonboard
+        add edi, esi
+        mov BYTE PTR[edi], 1
+        inc bonuscount
+        jmp NoBonusSpawn
+
+    try_again_bonus :
+        dec ecx
+        jmp find_free_bonus_pos
+
+   NoBonusSpawn_pop :
+         pop esi
+
+   NoBonusSpawn :
+         pop esi
+        pop ecx
+        pop ebx
+        pop eax
+        ret
+
+
+ MaintainBonusItems ENDP
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 highscores_load PROC
